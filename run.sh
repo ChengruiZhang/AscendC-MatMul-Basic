@@ -39,7 +39,7 @@ if [ ! $ASCEND_HOME_DIR ]; then
 fi
 
 # 指定当前sample的算子文件名
-FILE_NAME=add_custom
+FILE_NAME=matmul_custom
 
 # 指定芯片版本: ascend910, ascend310p
 SOC_VERSION=ascend910B1
