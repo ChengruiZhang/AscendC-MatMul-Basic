@@ -1,0 +1,6 @@
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/CMakeFiles/edit_cache.dir
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/CMakeFiles/rebuild_cache.dir
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/cmake/npu/CMakeFiles/matmul_custom_sim.dir
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/cmake/npu/CMakeFiles/edit_cache.dir
+/code/samples8_0/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/build/cmake/npu/CMakeFiles/rebuild_cache.dir
