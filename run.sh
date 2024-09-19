@@ -32,7 +32,7 @@ VersionMap["ascend910B1"]="Ascend910B1"
 
 if [ ! $ASCEND_HOME_DIR ]; then
     if [ -d "$HOME/Ascend/ascend-toolkit/latest" ]; then
-        export ASCEND_HOME_DIR=$HOME/Ascend/ascend-toolkit/latest
+        export ASCEND_HOME_DIR=/usr/local/Ascend/ascend-toolkit/latest
     else
         export ASCEND_HOME_DIR=/usr/local/Ascend/ascend-toolkit/latest
     fi
