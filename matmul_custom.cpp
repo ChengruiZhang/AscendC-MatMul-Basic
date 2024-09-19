@@ -137,15 +137,17 @@ private:
 
         outQueueCO1.FreeTensor(c1Local);
     }
-    __aicore__ inline void CopyOut()
+        __aicore__ inline void CopyOut()
     {
         LocalTensor<float> c2Local = outQueueCO2.DeQue<float>();
-
         // transform nz to nd
-        for (int i = 0; i < nBlocks; ++i) {
-            DataCopy(cGM[i * 16], c2Local[i * m * 16], { m, 2, 0, uint16_t((nBlocks - 1) * 2) });
+        for (int i = 0; i < nBlocks; i++) {
+            // 原始代码，运行会报错，nBlocks=2固定，m=32
+            DataCopy(cGM[0], c2Local[i * m * 16], { m, 2, 0, uint16_t((nBlocks - 1) * 2) }); 
         }
-
+        // 用以下代码替换for循环，运行即不会报错，但是结果依然为全0
+        // DataCopy(cGM[0], c2Local[0], { m, 2, 0, uint16_t((nBlocks - 1) * 2) });
+        // DataCopy(cGM[16], c2Local[512], { m, 2, 0, uint16_t((nBlocks - 1) * 2) });
         outQueueCO2.FreeTensor(c2Local);
     }
 
