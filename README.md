@@ -6,7 +6,7 @@
 
 运行前视情况需要修改run.sh line 33-39行的lib地址
 
-报错位置在matmul_custom.cpp 的144行循环处
+报错位置在matmul_custom.cpp 的163行循环处
 
 kernel代码来源自
 
