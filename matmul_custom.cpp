@@ -16,9 +16,9 @@ class KernelMatmul {
 public:
     __aicore__ inline KernelMatmul()
     {
-        aSize = m * k;
+        aSize = m * k; // 1024
         bSize = k * n;
-        cSize = m * m;
+        cSize = m * n;
         mBlocks = m / 16;
         nBlocks = n / 16;
         kBlocks = k / 16;
@@ -28,12 +28,12 @@ public:
         aGM.SetGlobalBuffer((__gm__ half*)a);
         bGM.SetGlobalBuffer((__gm__ half*)b);
         cGM.SetGlobalBuffer((__gm__ float*)c);
-        pipe.InitBuffer(inQueueA1, 1, aSize * sizeof(half));
-        pipe.InitBuffer(inQueueA2, 1, aSize * sizeof(half));
-        pipe.InitBuffer(inQueueB1, 1, bSize * sizeof(half));
-        pipe.InitBuffer(inQueueB2, 2, bSize * sizeof(half) / 2);
-        pipe.InitBuffer(outQueueCO1, 2, cSize * sizeof(float) / 2);
-        pipe.InitBuffer(outQueueCO2, 1, cSize * sizeof(float));
+        pipe.InitBuffer(inQueueA1, 1, aSize * sizeof(half)); // 1024 * 2
+        pipe.InitBuffer(inQueueA2, 1, aSize * sizeof(half)); // 1024 * 2
+        pipe.InitBuffer(inQueueB1, 1, bSize * sizeof(half)); // 1024 * 2
+        pipe.InitBuffer(inQueueB2, 2, bSize * sizeof(half) / 2); // 1024 * 2 / 2; b matrix double buffer
+        pipe.InitBuffer(outQueueCO1, 2, cSize * sizeof(float) / 2); // 1024 * 4 / 2
+        pipe.InitBuffer(outQueueCO2, 1, cSize * sizeof(float)); // 1024 * 4
     }
     __aicore__ inline void Process()
     {
@@ -44,7 +44,7 @@ public:
         LocalTensor<half> a2Local = inQueueA2.DeQue<half>();
         LocalTensor<float> c2Local = outQueueCO2.AllocTensor<float>();
         // split matrix b into 2 parts, [32, 16] and [32, 16]
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 2; ++i) { 
             SplitB(b1Local, i);
             Compute(a2Local);
             Aggregate(c2Local, i);
@@ -60,17 +60,25 @@ private:
     __aicore__ inline void CopyND2NZ(const LocalTensor<half>& dst, const GlobalTensor<half>& src, const uint16_t height,
         const uint16_t width)
     {
+        DataCopyParams dataCopyParams;
+        dataCopyParams.blockCount = height; // 32
+        dataCopyParams.blockLen = 1;
+        dataCopyParams.srcStride = uint16_t(width / 16 - 1);
+        dataCopyParams.dstStride = 0;
+        
         for (int i = 0; i < width / 16; ++i) {
             int srcOffset = i * 16;
             int dstOffset = i * 16 * height;
-            DataCopy(dst[dstOffset], src[srcOffset], { height, 1, uint16_t(width / 16 - 1), 0 });
+            DataCopy(dst[dstOffset], src[srcOffset], dataCopyParams);
         }
     }
     __aicore__ inline void CopyIn()
     {
-        LocalTensor<half> a1Local = inQueueA1.AllocTensor<half>();
+        LocalTensor<half> a1Local = inQueueA1.AllocTensor<half>(); // allocata tensor memory
         LocalTensor<half> b1Local = inQueueB1.AllocTensor<half>();
 
+        // printf("fmt string %d\n", a1Local);
+        
         CopyND2NZ(a1Local, aGM, m, k);
         CopyND2NZ(b1Local, bGM, k, n);
 
@@ -84,7 +92,7 @@ private:
         LocalTensor<half> a1Local = inQueueA1.DeQue<half>();
         LocalTensor<half> a2Local = inQueueA2.AllocTensor<half>();
 
-        // transform nz to zz
+        // transform NZ to ZZ
         for (int i = 0; i < mBlocks; ++i) {
             LoadData2dParams loadDataParams;
             loadDataParams.repeatTimes = kBlocks;
@@ -93,8 +101,8 @@ private:
 
             LoadData(a2Local[dstOffset], a1Local[srcOffset], loadDataParams);
 
-            srcOffset += 16 * 16;
-            dstOffset += k * 16;
+            srcOffset += 16 * 16; // 1 blk
+            dstOffset += k * 16; // k/16 blk
         }
 
         inQueueA2.EnQue<half>(a2Local);
@@ -103,7 +111,7 @@ private:
     __aicore__ inline void SplitB(const LocalTensor<half>& b1Local, const int bSplitIdx)
     {
         LocalTensor<half> b2Local = inQueueB2.AllocTensor<half>();
-
+ 
         // transform nz to zn
         LoadData2dParams loadDataParams;
         loadDataParams.repeatTimes = kBlocks;
@@ -119,7 +127,14 @@ private:
         LocalTensor<half> b2Local = inQueueB2.DeQue<half>();
         LocalTensor<float> c1Local = outQueueCO1.AllocTensor<float>();
 
-        Mmad(c1Local, a2Local, b2Local, { m, uint16_t(n / 2), k, false, 0, false, false, false });
+        // MmadParams mmadParams;
+        // mmadParams.m = m;
+        // mmadParams.n = uint16_t(n / 2);
+        // mmadParams.k = k;
+        
+        // Mmad(c1Local, a2Local, b2Local, mmadParams);
+        // Mmad(c1Local, a2Local, b2Local, { m, uint16_t(n / 2), k, false, 0, false, false, false });
+        Mmad(c1Local, a2Local, b2Local, { m, uint16_t(n / 2), k, 0, false, true });
 
         outQueueCO1.EnQue<float>(c1Local);
         inQueueB2.FreeTensor(b2Local);
@@ -137,30 +152,33 @@ private:
 
         outQueueCO1.FreeTensor(c1Local);
     }
-        __aicore__ inline void CopyOut()
+    __aicore__ inline void CopyOut()
     {
         LocalTensor<float> c2Local = outQueueCO2.DeQue<float>();
         // transform nz to nd
+        DataCopyParams dataCopyParams;
+        dataCopyParams.blockCount = m;
+        dataCopyParams.blockLen = 2;
+        dataCopyParams.srcStride = 0;
+        dataCopyParams.dstStride = uint16_t((nBlocks - 1) * 2);
         for (int i = 0; i < nBlocks; i++) {
-            // 原始代码，运行会报错，nBlocks=2固定，m=32
-            DataCopy(cGM[0], c2Local[i * m * 16], { m, 2, 0, uint16_t((nBlocks - 1) * 2) }); 
+            DataCopy(cGM[i * 16], c2Local[i * m * 16], dataCopyParams);
         }
-        // 用以下代码替换for循环，运行即不会报错，但是结果依然为全0
-        // DataCopy(cGM[0], c2Local[0], { m, 2, 0, uint16_t((nBlocks - 1) * 2) });
-        // DataCopy(cGM[16], c2Local[512], { m, 2, 0, uint16_t((nBlocks - 1) * 2) });
+        // DataCopy(cGM[0], c2Local[0], dataCopyParams); 
+        // DataCopy(cGM[16], c2Local[512], dataCopyParams); 
         outQueueCO2.FreeTensor(c2Local);
     }
 
 private:
     TPipe pipe;
 
-    TQue<QuePosition::A1, 1> inQueueA1;
-    TQue<QuePosition::A2, 1> inQueueA2;
-    TQue<QuePosition::B1, 1> inQueueB1;
-    TQue<QuePosition::B2, 2> inQueueB2;
+    TQue<QuePosition::A1, 1> inQueueA1; // L1 Buffer
+    TQue<QuePosition::A2, 1> inQueueA2; // L0A Buffer
+    TQue<QuePosition::B1, 1> inQueueB1; // L1 Buffer
+    TQue<QuePosition::B2, 2> inQueueB2; // L0B Buffer
     // dst queue
-    TQue<QuePosition::CO1, 2> outQueueCO1;
-    TQue<QuePosition::CO2, 1> outQueueCO2;
+    TQue<QuePosition::CO1, 2> outQueueCO1; // L0C Buffer
+    TQue<QuePosition::CO2, 1> outQueueCO2; // UB
 
     GlobalTensor<half> aGM, bGM;
     GlobalTensor<float> cGM;
