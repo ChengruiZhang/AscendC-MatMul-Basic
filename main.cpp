@@ -15,9 +15,9 @@ extern "C" void matmul_custom(uint8_t *param1, uint8_t *param2, uint8_t *param3)
 
 int32_t main(int32_t argc, char* argv[])
 {
-    size_t param1FileSize = 1024 * sizeof(uint16_t);  // uint16_t represent half
-    size_t param2FileSize = 1024 * sizeof(uint16_t);  // uint16_t represent half
-    size_t param3FileSize = 1024 * sizeof(float);
+    size_t param1FileSize = 64 * 64 * sizeof(uint16_t);  // uint16_t represent half
+    size_t param2FileSize = 64 * 64 * sizeof(uint16_t);  // uint16_t represent half
+    size_t param3FileSize = 64 * 64 * sizeof(float);
     uint32_t blockDim = 1;
 
 #ifdef __CCE_KT_TEST__
