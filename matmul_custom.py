@@ -8,12 +8,14 @@ def gen_golden_data():
     x1_gm_type = np.float16
     x2_gm_type = np.float16
 
-    M = 32
-    N = 32
-    K = 32
+    M = 64
+    N = 64
+    K = 64
 
-    x1_gm = np.random.randint(1, 10, [M, K]).astype(x1_gm_type)
-    x2_gm = np.random.randint(1, 10, [K, N]).astype(x2_gm_type)
+    # x1_gm = np.random.randint(1, 10, [M, K]).astype(x1_gm_type)
+    # x2_gm = np.random.randint(1, 10, [K, N]).astype(x2_gm_type)
+    x1_gm = np.arange(M * K).reshape([M, K]).astype(x1_gm_type)
+    x2_gm = np.arange(K * N).reshape([K, N]).astype(x2_gm_type)
     golden = np.matmul(x1_gm.astype(np.float32), x2_gm.astype(np.float32)).astype(np.float32)
 
     x1_gm.tofile("./input/x1_gm.bin")
