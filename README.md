@@ -2,11 +2,9 @@
 
 8.0Rc2，Ascend910B3卡
 
-运行bash run.sh npu即可编译运行，但是结果会报错
+运行bash run.sh matmul_custom Ascend910B1 AiCore npu即可编译运行
 
 运行前视情况需要修改run.sh line 33-39行的lib地址
-
-报错位置在matmul_custom.cpp 的163行循环处
 
 kernel代码来源自
 
