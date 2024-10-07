@@ -1,0 +1,32 @@
+{
+    "op_type": "matmul_custom",
+    "data_script": "",
+    "gen_data": false,
+    "params": [{
+                "name": "x",
+                "dtype": "float16",
+                "param_type": "input",
+                "shape": [32, 32],
+                "data_file": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/input/x1_gm.bin"
+            },
+            {
+                "name": "y",
+                "dtype": "float16",
+                "param_type": "input",
+                "shape": [32,32],
+                "data_file": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/input/x2_gm.bin"
+            },
+            {
+                "name": "z",
+                "dtype": "float16",
+                "param_type": "output",
+                "shape": [32,32],
+                "data_file": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/input/output.bin"
+            }
+    ],
+    "kernel_info": {
+        "kernel_source": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul/matmul_custom.cpp",
+        "kernel_name": "matmul_custom",
+        "kernel_includes": []
+    }
+}
