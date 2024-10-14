@@ -1,0 +1,45 @@
+{
+    "kernel_name": "matmul_custom",
+    "kernel_path": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/matmul_custom_npu",
+    
+    "blockdim": 1,
+    "mode": "ca",
+    "device_id": 0,
+    "magic": "RT_DEV_BINARY_MAGIC_ELF_AICUBE",
+    "test_cases": [
+      {
+        "case_name": "Test_GEMM_Custom_001",
+        "param_desc": [
+          {
+            "param_type": "input",
+            "type": "float16",
+            "shape": [
+              128,
+              128
+            ],
+            "data_path": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/input/x1_gm.bin",
+            "name": "x"
+          },
+          {
+            "param_type": "input",
+            "type": "float16",
+            "shape": [
+              128,
+              128
+            ],
+            "data_path": "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/input/x2_gm.bin",
+            "name": "y"
+          },
+          {
+            "param_type": "output",
+            "type": "float32",
+            "shape": [
+              128,
+              128
+            ],
+            "name": "z"
+          }
+        ]
+      }
+    ]
+  }

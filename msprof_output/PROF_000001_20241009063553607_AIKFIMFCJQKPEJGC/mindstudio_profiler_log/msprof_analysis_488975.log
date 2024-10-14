@@ -1,0 +1,159 @@
+2024-10-09 06:36:00 [INFO] [488975] [488975] [time_logger.h:28] DeviceContextEntry  start
+2024-10-09 06:36:00 [INFO] [488975] [488979] [parser.cpp:45] loop: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/data/ts_track.data.0.slice_0, file size: 80
+2024-10-09 06:36:00 [INFO] [488975] [488978] [parser.cpp:45] loop: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/data/ffts_profile.data.0.slice_0, file size: 14080
+2024-10-09 06:36:00 [INFO] [488975] [488981] [parser.cpp:45] loop: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/data/lpmFreqConv.data.0.slice_0, file size: 1776
+2024-10-09 06:36:00 [INFO] [488975] [488978] [parser.cpp:48] total size: 14080
+2024-10-09 06:36:00 [INFO] [488975] [488981] [parser.cpp:48] total size: 1776
+2024-10-09 06:36:00 [INFO] [488975] [488978] [parser.cpp:149] Parse filePrefix is: ffts_profile, the number of files is: 1, and the total size of all files is: 14080
+2024-10-09 06:36:00 [INFO] [488975] [488981] [parser.cpp:149] Parse filePrefix is: lpmFreqConv., the number of files is: 1, and the total size of all files is: 1776
+2024-10-09 06:36:00 [INFO] [488975] [488980] [parser.cpp:45] loop: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/data/stars_soc.data.0.slice_0, file size: 15104
+2024-10-09 06:36:00 [INFO] [488975] [488979] [parser.cpp:48] total size: 80
+2024-10-09 06:36:00 [INFO] [488975] [488981] [parser.cpp:81] Data has been read to the memory successfully!
+2024-10-09 06:36:00 [INFO] [488975] [488980] [parser.cpp:48] total size: 15104
+2024-10-09 06:36:00 [INFO] [488975] [488978] [parser.cpp:81] Data has been read to the memory successfully!
+2024-10-09 06:36:00 [INFO] [488975] [488979] [parser.cpp:149] Parse filePrefix is: ts_track., the number of files is: 1, and the total size of all files is: 80
+2024-10-09 06:36:00 [INFO] [488975] [488981] [freq_parser.cpp:68] FreqProfileData structCount is : 2
+2024-10-09 06:36:00 [INFO] [488975] [488978] [ffts_profile_parser.cpp:75] FftsProfileData structCount is : 110
+2024-10-09 06:36:00 [INFO] [488975] [488980] [parser.cpp:149] Parse filePrefix is: stars_soc., the number of files is: 1, and the total size of all files is: 15104
+2024-10-09 06:36:00 [INFO] [488975] [488979] [parser.cpp:81] Data has been read to the memory successfully!
+2024-10-09 06:36:00 [INFO] [488975] [488981] [freq_parser.cpp:93] Freq.data parser is completed, begin to save data into dataInventory!
+2024-10-09 06:36:00 [INFO] [488975] [488979] [ts_track_parser.cpp:65] TsTrack structCount: 2
+2024-10-09 06:36:00 [INFO] [488975] [488981] [parser.cpp:167] Parser is completed!
+2024-10-09 06:36:00 [INFO] [488975] [488980] [parser.cpp:81] Data has been read to the memory successfully!
+2024-10-09 06:36:00 [INFO] [488975] [488979] [parser.cpp:167] Parser is completed!
+2024-10-09 06:36:00 [INFO] [488975] [488980] [stars_soc_parser.cpp:74] StarsSoc structCount: 236
+2024-10-09 06:36:00 [INFO] [488975] [488978] [ffts_profile_parser.cpp:86] Ffts_profile.data parser is completed, begin to save data into dataInventory!
+2024-10-09 06:36:00 [INFO] [488975] [488978] [parser.cpp:167] Parser is completed!
+2024-10-09 06:36:00 [INFO] [488975] [488980] [parser.cpp:167] Parser is completed!
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[0]Release Data Types: 
+2024-10-09 06:36:00 [INFO] [488975] [488985] [step_trace_process.cpp:186] Start to process step trace data
+2024-10-09 06:36:00 [INFO] [488975] [488983] [time_logger.h:28] LogModeling::SplitLogGroups  start
+2024-10-09 06:36:00 [INFO] [488975] [488984] [freq_persistence.cpp:47] Start to process /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/sqlite/freq.db.
+2024-10-09 06:36:00 [INFO] [488975] [488986] [pmu_modeling.cpp:48] PMU modeling has done!
+2024-10-09 06:36:00 [WARN] [488975] [488985] [step_trace_process.cpp:189] stepData is empty
+2024-10-09 06:36:00 [INFO] [488975] [488982] [acc_pmu_persistence.cpp:57] Start to process /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/sqlite/acc_pmu.db.
+2024-10-09 06:36:00 [INFO] [488975] [488983] [time_logger.h:35] LogModeling::SplitLogGroups  end, cost time = 0 ms
+2024-10-09 06:36:00 [INFO] [488975] [488982] [acc_pmu_persistence.cpp:61] There is no acc pmu data don't need to persistence!
+2024-10-09 06:36:00 [INFO] [488975] [488984] [persistence_utils.h:39] Processor Save FreqParse Data.
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:107] HalLogData size:236
+2024-10-09 06:36:00 [INFO] [488975] [488984] [db_runner.cpp:47] Start create FreqParse
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:108] acsqS stream:2, total:118
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:109] acsqE stream:2, total:118
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:110] fftsS stream:0, total:0
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:111] fftsE stream:0, total:0
+2024-10-09 06:36:00 [INFO] [488975] [488983] [time_logger.h:28] LogModeling::AddToDeviceTask  start
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:177] ACSQ matched count:118
+2024-10-09 06:36:00 [INFO] [488975] [488983] [log_modeling.cpp:187] FFTS matched count:0
+2024-10-09 06:36:00 [INFO] [488975] [488983] [time_logger.h:35] LogModeling::AddToDeviceTask  end, cost time = 0 ms
+2024-10-09 06:36:00 [INFO] [488975] [488984] [db_runner.cpp:56] create FreqParse success
+2024-10-09 06:36:00 [INFO] [488975] [488984] [db_runner.h:58] Start insert data to FreqParse
+2024-10-09 06:36:00 [INFO] [488975] [488984] [db_runner.h:65] insert data to FreqParse success
+2024-10-09 06:36:00 [INFO] [488975] [488984] [freq_persistence.cpp:56] Process FreqParse done!
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[1]Release Data Types: St6vectorIN8Analysis6Domain10HalLogDataESaIS2_EE St6vectorIN8Analysis6Domain12HalTrackDataESaIS2_EE 
+2024-10-09 06:36:00 [INFO] [488975] [488987] [db_runner.h:72] Start query data
+2024-10-09 06:36:00 [INFO] [488975] [488987] [db_runner.h:79] Query data success: SELECT stream_id, request_id, batch_id, task_id, context_ids, model_id, task_type, connection_id FROM HostTask where device_id = 0
+2024-10-09 06:36:00 [WARN] [488975] [488987] [load_host_data.cpp:54] There is no /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/..///host//sqlite/ge_info.db
+2024-10-09 06:36:00 [WARN] [488975] [488987] [load_host_data.cpp:54] There is no /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/..///host//sqlite/hccl.db
+2024-10-09 06:36:00 [WARN] [488975] [488987] [load_host_data.cpp:54] There is no /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/..///host//sqlite/hccl.db
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[2]Release Data Types: 
+2024-10-09 06:36:00 [INFO] [488975] [488989] [pmu_association.cpp:39] context pmu count is : 110
+2024-10-09 06:36:00 [INFO] [488975] [488989] [pmu_association.cpp:40] block pmu count is : 0
+2024-10-09 06:36:00 [INFO] [488975] [488989] [pmu_association.cpp:204] The acceleratorType of PMU is MIX
+2024-10-09 06:36:00 [INFO] [488975] [488989] [pmu_association.cpp:159] Context PMU has been calculated!
+2024-10-09 06:36:00 [INFO] [488975] [488988] [ascend_task_association.cpp:178] Found 118 host device matched task, generate 119 topDownTask
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[3]Release Data Types: St3mapIN8Analysis6Domain6TaskIdESt6vectorINS0_8Entities8HostTaskESaIS5_EESt4lessIS2_ESaISt4pairIKS2_S7_EEE St6vectorIN8Analysis6Domain10HalPmuDataESaIS2_EE St6vectorIN8Analysis6Domain14HalFreqLpmDataESaIS2_EE 
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:51] Start Hccl calculator ProcessEntry.
+2024-10-09 06:36:00 [INFO] [488975] [488990] [metric_summary_persistence.cpp:241] Start to process /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/sqlite/metric_summary.db.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:71] Start Hccl calculator GetHcclData.
+2024-10-09 06:36:00 [INFO] [488975] [488990] [db_runner.cpp:47] Start create MetricSummary
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:100] Start merge hccl task and ascend task.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:164] Start merge hccl op data.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:241] Start UpdateHcclOpNameByGroupName.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:267] Start UpdateHcclBandwidth.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:343] Start GetHcclStatisticsData.
+2024-10-09 06:36:00 [WARN] [488975] [488991] [hccl_calculator.cpp:345] No op type in hccl data.
+2024-10-09 06:36:00 [INFO] [488975] [488991] [hccl_calculator.cpp:397] Start inject hccl data.
+2024-10-09 06:36:00 [INFO] [488975] [488990] [db_runner.cpp:56] create MetricSummary success
+2024-10-09 06:36:00 [INFO] [488975] [488990] [metric_summary_persistence.cpp:249] Process MetricSummary done!
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[4]Release Data Types: St3mapIN8Analysis6Domain6TaskIdESt6vectorINS1_10DeviceTaskESaIS4_EESt4lessIS2_ESaISt4pairIKS2_S6_EEE St6vectorIN8Analysis6Domain8HcclTaskESaIS2_EE 
+2024-10-09 06:36:00 [INFO] [488975] [488993] [ascend_task_persistence.cpp:63] Start to process /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0/sqlite/ascend_task.db.
+2024-10-09 06:36:00 [INFO] [488975] [488992] [device_hccl_persistence.cpp:129] Start to dump device hccl data.
+2024-10-09 06:36:00 [WARN] [488975] [488992] [device_hccl_persistence.cpp:48] Hccl op data is empty.
+2024-10-09 06:36:00 [INFO] [488975] [488993] [persistence_utils.h:39] Processor Save AscendTask Data.
+2024-10-09 06:36:00 [WARN] [488975] [488992] [device_hccl_persistence.cpp:76] Hccl task data is empty.
+2024-10-09 06:36:00 [INFO] [488975] [488993] [db_runner.cpp:47] Start create AscendTask
+2024-10-09 06:36:00 [WARN] [488975] [488992] [device_hccl_persistence.cpp:108] Hccl statistics data is empty.
+2024-10-09 06:36:00 [INFO] [488975] [488993] [db_runner.cpp:56] create AscendTask success
+2024-10-09 06:36:00 [INFO] [488975] [488993] [db_runner.h:58] Start insert data to AscendTask
+2024-10-09 06:36:00 [INFO] [488975] [488993] [db_runner.h:65] insert data to AscendTask success
+2024-10-09 06:36:00 [INFO] [488975] [488993] [ascend_task_persistence.cpp:68] Process AscendTask done!
+2024-10-09 06:36:00 [INFO] [488975] [488976] [process_control.cpp:191] Level[5]Release Data Types: St6vectorI11TopDownTaskSaIS0_EE St6vectorIN8Analysis6Domain14DeviceHcclTaskESaIS2_EE St6vectorIN8Analysis6Domain14HcclStatisticsESaIS2_EE St6vectorIN8Analysis6Domain6HcclOpESaIS2_EE 
+2024-10-09 06:36:00 [INFO] [488975] [488975] [device_context.cpp:122] stat info: ===============================================================================
+deivce file in /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/msprof_output/PROF_000001_20241009063553607_AIKFIMFCJQKPEJGC/device_0
+chip id: 5, process levels:6
+-------------------------------------------------------------------------------
+level[0] generalResult:true, process num:5
+	process0[TsTrackParser]:return: 0x0, mandatory:true
+		dependProcessNames: 
+		startTime:85,229,329,439 us, duration: 676 us
+	process1[FftsProfileParser]:return: 0x0, mandatory:true
+		dependProcessNames: 
+		startTime:85,229,329,470 us, duration: 761 us
+	process2[FreqParser]:return: 0x0, mandatory:true
+		dependProcessNames: 
+		startTime:85,229,329,512 us, duration: 577 us
+	process3[StarsSocParser]:return: 0x0, mandatory:true
+		dependProcessNames: 
+		startTime:85,229,329,546 us, duration: 998 us
+	process4[DeviceTaskProcess]:return: 0x0, mandatory:true
+		dependProcessNames: 
+		startTime:85,229,329,588 us, duration: 59 us
+-------------------------------------------------------------------------------
+level[1] generalResult:true, process num:5
+	process0[AccPmuPersistence]:return: 0x0, mandatory:true
+		dependProcessNames: StarsSocParser, 
+		startTime:85,229,330,867 us, duration: 3,292 us
+	process1[Domain::LogModeling]:return: 0x0, mandatory:true
+		dependProcessNames: StarsSocParser, TsTrackParser, 
+		startTime:85,229,330,879 us, duration: 4,203 us
+	process2[StepTraceProcess]:return: 0x0, mandatory:false
+		dependProcessNames: TsTrackParser, 
+		startTime:85,229,330,889 us, duration: 3,108 us
+	process3[FreqPersistence]:return: 0x0, mandatory:true
+		dependProcessNames: FreqParser, 
+		startTime:85,229,330,901 us, duration: 5,571 us
+	process4[PmuModeling]:return: 0x0, mandatory:true
+		dependProcessNames: FftsProfileParser, TsTrackParser, 
+		startTime:85,229,330,909 us, duration: 3,065 us
+-------------------------------------------------------------------------------
+level[2] generalResult:true, process num:1
+	process0[LoadHostData]:return: 0x0, mandatory:false
+		dependProcessNames: Domain::LogModeling, 
+		startTime:85,229,343,220 us, duration: 2,539 us
+-------------------------------------------------------------------------------
+level[3] generalResult:true, process num:2
+	process0[PmuAssociation]:return: 0x0, mandatory:true
+		dependProcessNames: LoadHostData, PmuModeling, 
+		startTime:85,229,346,179 us, duration: 936 us
+	process1[AscendTaskAssociation]:return: 0x0, mandatory:true
+		dependProcessNames: LoadHostData, 
+		startTime:85,229,346,214 us, duration: 1,853 us
+-------------------------------------------------------------------------------
+level[4] generalResult:true, process num:2
+	process0[MetricSummaryPersistence]:return: 0x0, mandatory:true
+		dependProcessNames: PmuAssociation, 
+		startTime:85,229,348,484 us, duration: 2,085 us
+	process1[HcclCalculator]:return: 0x0, mandatory:true
+		dependProcessNames: AscendTaskAssociation, LoadHostData, 
+		startTime:85,229,348,506 us, duration: 655 us
+-------------------------------------------------------------------------------
+level[5] generalResult:true, process num:2
+	process0[AscendTaskPersistence]:return: 0x0, mandatory:true
+		dependProcessNames: HcclCalculator, 
+		startTime:85,229,350,949 us, duration: 1,703 us
+	process1[DeviceHcclPersistence]:return: 0x0, mandatory:true
+		dependProcessNames: HcclCalculator, 
+		startTime:85,229,350,971 us, duration: 291 us
+
+
+2024-10-09 06:36:00 [INFO] [488975] [488975] [time_logger.h:35] DeviceContextEntry  end, cost time = 26 ms

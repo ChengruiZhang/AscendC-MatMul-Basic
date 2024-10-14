@@ -1,0 +1,3 @@
+Op Name=matmul_custom
+Block Dim=1
+Run Soc Version=Ascend910B3

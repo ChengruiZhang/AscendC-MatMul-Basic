@@ -1,0 +1,10 @@
+2024-10-09 14:12:27 [WARNING] [base_model.py:59] - Failed to connect database, please check database of step_trace. 
+2024-10-09 14:12:27 [WARNING] [base_model.py:59] - Failed to connect database, please check database of step_trace. 
+2024-10-09 14:12:27 [INFO] [profiling_scene.py:70] - Current scene of data is based on single_op
+2024-10-09 14:12:27 [WARNING] [pipeline_overlap_viewer.py:73] - Both task data and hccl data are missing, no need to calculate the overlap.
+2024-10-09 14:12:28 [WARNING] [base_model.py:63] - Table step_trace_data not found.
+2024-10-09 14:12:28 [WARNING] [base_model.py:63] - Table step_trace_data not found.
+2024-10-09 14:12:28 [INFO] [profiling_scene.py:70] - Current scene of data is based on single_op
+2024-10-09 14:12:28 [WARNING] [msprof_export.py:273] - Different flip numbers, 3 host flips and 0 device flips.
+2024-10-09 14:12:28 [WARNING] [meta_condition_manager.py:341] - The accumulated result of comparison fields is equal to 0.
+2024-10-09 14:12:28 [WARNING] [meta_condition_manager.py:341] - The accumulated result of comparison fields is equal to 0.
