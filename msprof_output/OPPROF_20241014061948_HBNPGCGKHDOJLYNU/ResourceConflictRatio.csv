@@ -1,0 +1,6 @@
+block_id,sub_block_id,aic_time(us),aic_total_cycles,aic_cube_wait_ratio,aic_mte1_wait_ratio,aic_mte2_wait_ratio,aic_mte3_wait_ratio,aiv_time(us),aiv_total_cycles,aiv_vec_total_cflt_ratio,aiv_vec_bankgroup_cflt_ratio,aiv_vec_bank_cflt_ratio,aiv_vec_resc_cflt_ratio,aiv_vec_mte_cflt_ratio,aiv_vec_wait_ratio,aiv_mte1_wait_ratio,aiv_mte2_wait_ratio,aiv_mte3_wait_ratio,
+0,cube0,352.789459,635021,0.000000,0.000000,0.000000,0.000000,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+1,cube0,352.827209,635089,0.000000,0.000000,0.000000,0.000000,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+2,cube0,354.305542,637750,0.000000,0.000000,0.000000,0.000000,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+3,cube0,352.922791,635261,0.000000,0.000000,0.000000,0.000000,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+4,cube0,354.578339,638241,0.000000,0.000000,0.000000,0.000000,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,

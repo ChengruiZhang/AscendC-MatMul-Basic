@@ -1,0 +1,3 @@
+Op Name=RL1_WGM
+Block Dim=5
+Run Soc Version=Ascend910B3

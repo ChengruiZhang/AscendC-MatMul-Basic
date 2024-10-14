@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CCE
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/main.cpp" "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/main.cpp.o"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/matmul_custom.cpp" "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/matmul_custom.cpp.o"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/main.cpp" "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/main.cpp.o"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/test.cpp" "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/test.cpp.o"
   )
 
 # The include file search paths:

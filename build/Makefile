@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double
+CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build
+CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build/CMakeFiles /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build/CMakeFiles /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -115,19 +115,6 @@ preinstall/fast:
 depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
-
-#=============================================================================
-# Target rules for targets named matmul_custom_cpu
-
-# Build rule for target.
-matmul_custom_cpu: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 matmul_custom_cpu
-.PHONY : matmul_custom_cpu
-
-# fast build rule for target.
-matmul_custom_cpu/fast:
-	$(MAKE) $(MAKESILENT) -f cmake/cpu/CMakeFiles/matmul_custom_cpu.dir/build.make cmake/cpu/CMakeFiles/matmul_custom_cpu.dir/build
-.PHONY : matmul_custom_cpu/fast
 
 #=============================================================================
 # Target rules for targets named matmul_custom_npu
@@ -164,7 +151,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... matmul_custom_sim"
-	@echo "... matmul_custom_cpu"
 	@echo "... matmul_custom_npu"
 .PHONY : help
 

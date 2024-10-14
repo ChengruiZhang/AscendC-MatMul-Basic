@@ -18,13 +18,13 @@ def gen_golden_data(M, N, K):
     # x1_gm_0 = np.arange(M * K).astype(x1_gm_type).reshape([M, K]) / 1000
     # x2_gm_0 = np.random.randint(1, 2, [K, N]).astype(x2_gm_type) / 1
     
-    # x1_gm_0 = np.random.randint(1, 2, [M, K]) / 1
-    x2_gm_0 = np.random.randint(1, 2, [K, N]) / 1
+    x1_gm_0 = np.random.randint(1, 4, [M, K]) / 1
+    x2_gm_0 = np.random.randint(1, 4, [K, N]) / 1
 
-    x1_gm_0 = np.arange(M).astype(x1_gm_type).reshape(M, 1) / 1
-    x1_gm_0 = np.repeat(x1_gm_0, K, axis=1)
+    # x1_gm_0 = np.arange(M).astype(x1_gm_type).reshape(M, 1) / 1
+    # x1_gm_0 = np.repeat(x1_gm_0, K, axis=1)
 
-    # x2_gm_0 = np.arange(K).astype(x1_gm_type).reshape(K, 1) / 1
+    # x2_gm_0 = np.arange(K).astype(x1_gm_type).reshape(K, 1) / 100
     # x2_gm_0 = np.repeat(x2_gm_0, N, axis=1)
     
     x1_gm = x1_gm_0.astype(x1_gm_type)

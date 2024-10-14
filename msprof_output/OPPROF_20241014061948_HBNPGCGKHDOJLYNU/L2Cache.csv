@@ -1,0 +1,6 @@
+block_id,sub_block_id,aic_time(us),aic_total_cycles,aic_write_cache_hit,aic_write_cache_miss_allocate,aic_r0_read_cache_hit,aic_r0_read_cache_miss_allocate,aic_r1_read_cache_hit,aic_r1_read_cache_miss_allocate,aic_write_hit_rate(%),aic_read_hit_rate(%),aic_total_hit_rate(%),aiv_time(us),aiv_total_cycles,aiv_write_cache_hit,aiv_write_cache_miss_allocate,aiv_r0_read_cache_hit,aiv_r0_read_cache_miss_allocate,aiv_r1_read_cache_hit,aiv_r1_read_cache_miss_allocate,aiv_write_hit_rate(%),aiv_read_hit_rate(%),aiv_total_hit_rate(%),
+0,cube0,352.789459,635021,33,0,409639,9,409642,6,100.000000,99.998161,99.998169,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+1,cube0,352.827209,635089,33,0,408779,869,408761,887,100.000000,99.785667,99.785675,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+2,cube0,354.305542,637750,33,0,408463,1185,408470,1178,100.000000,99.711578,99.711594,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+3,cube0,352.922791,635261,33,0,409646,2,409643,5,100.000000,99.999138,99.999146,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,
+4,cube0,354.578339,638241,33,0,409639,9,409634,14,100.000000,99.997185,99.997192,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,

@@ -7,19 +7,15 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/CMakeLists.txt"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/CMakeLists.txt"
   "CMakeFiles/3.30.0-rc2/CMakeCCECompiler.cmake"
   "CMakeFiles/3.30.0-rc2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.30.0-rc2/CMakeSystem.cmake"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/Modules/CMakeCCECompiler.cmake.in"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/Modules/CMakeCCEInformation.cmake"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/Modules/CMakeDetermineCCECompiler.cmake"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/Modules/CMakeTestCCECompiler.cmake"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/cpu/CMakeLists.txt"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_double/cmake/npu/CMakeLists.txt"
-  "/usr/local/Ascend/ascend-toolkit/latest/tools/tikicpulib/lib/cmake/targets-tikicpulib-release.cmake"
-  "/usr/local/Ascend/ascend-toolkit/latest/tools/tikicpulib/lib/cmake/targets-tikicpulib.cmake"
-  "/usr/local/Ascend/ascend-toolkit/latest/tools/tikicpulib/lib/cmake/tikicpulib-config.cmake"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/cmake/Modules/CMakeCCECompiler.cmake.in"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/cmake/Modules/CMakeCCEInformation.cmake"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/cmake/Modules/CMakeDetermineCCECompiler.cmake"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/cmake/Modules/CMakeTestCCECompiler.cmake"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/HWPerfTest/cmake/npu/CMakeLists.txt"
   "/usr/share/cmake-3.30/Modules/CMakeCXXCompiler.cmake.in"
   "/usr/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
   "/usr/share/cmake-3.30/Modules/CMakeCXXInformation.cmake"
@@ -110,13 +106,11 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/3.30.0-rc2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.30.0-rc2/CMakeCXXCompiler.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
-  "cmake/cpu/CMakeFiles/CMakeDirectoryInformation.cmake"
   "cmake/npu/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "cmake/cpu/CMakeFiles/matmul_custom_cpu.dir/DependInfo.cmake"
   "cmake/npu/CMakeFiles/matmul_custom_npu.dir/DependInfo.cmake"
   "cmake/npu/CMakeFiles/matmul_custom_sim.dir/DependInfo.cmake"
   )

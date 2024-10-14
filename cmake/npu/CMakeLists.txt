@@ -10,8 +10,7 @@ add_executable(${smoke_testcase}_npu
 )
 
 target_compile_options(${smoke_testcase}_npu PRIVATE
-    -O0
-    -g
+    -O2
     -std=c++17
 )
 
