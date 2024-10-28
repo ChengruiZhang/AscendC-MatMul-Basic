@@ -62,7 +62,7 @@ int32_t main(int32_t argc, char* argv[])
 #else
     CHECK_ACL(aclInit(nullptr));
     aclrtContext context;
-    int32_t deviceId = 1;
+    int32_t deviceId = std::stoi(argv[7]);
     CHECK_ACL(aclrtSetDevice(deviceId));
     CHECK_ACL(aclrtCreateContext(&context, deviceId));
     aclrtStream stream = nullptr;
@@ -73,6 +73,7 @@ int32_t main(int32_t argc, char* argv[])
     CHECK_ACL(aclrtMallocHost((void**)(&param1Host), param1FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param1Device, param1FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
     ReadFile("./input/x1_gm.bin", param1FileSize, param1Host, param1FileSize);
+    // ReadFile("./input/matrix1.bin", param1FileSize, param1Host, param1FileSize);
     CHECK_ACL(aclrtMemcpy(param1Device, param1FileSize, param1Host, param1FileSize, ACL_MEMCPY_HOST_TO_DEVICE));
 
     uint8_t *param2Host;
@@ -80,6 +81,7 @@ int32_t main(int32_t argc, char* argv[])
     CHECK_ACL(aclrtMallocHost((void**)(&param2Host), param2FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param2Device, param2FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
     ReadFile("./input/x2_gm.bin", param2FileSize, param2Host, param2FileSize);
+    // ReadFile("./input/matrix2.bin", param2FileSize, param2Host, param2FileSize);
     CHECK_ACL(aclrtMemcpy(param2Device, param2FileSize, param2Host, param2FileSize, ACL_MEMCPY_HOST_TO_DEVICE));
 
     uint8_t *param3Host;
@@ -87,7 +89,7 @@ int32_t main(int32_t argc, char* argv[])
     CHECK_ACL(aclrtMallocHost((void**)(&param3Host), param3FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param3Device, param3FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
 
-    double warm_up = 10;
+    double warm_up = 5;
     for(int i = 0; i < warm_up; i++){
         matmul_custom_do(blockDim, nullptr, stream, param1Device, param2Device, param3Device, M, N, K);
     }

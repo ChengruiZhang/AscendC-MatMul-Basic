@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral
+CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build
+CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,14 +87,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build/CMakeFiles /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build/cmake/npu//CMakeFiles/progress.marks
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build/CMakeFiles 0
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build/CMakeFiles /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build/cmake/npu//CMakeFiles/progress.marks
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/clean
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/clean
 .PHONY : clean
 
 # The main clean target
@@ -103,22 +103,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/preinstall
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/preinstall
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 cmake/npu/CMakeFiles/matmul_custom_npu.dir/rule:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/CMakeFiles/matmul_custom_npu.dir/rule
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/CMakeFiles/matmul_custom_npu.dir/rule
 .PHONY : cmake/npu/CMakeFiles/matmul_custom_npu.dir/rule
 
 # Convenience name for target.
@@ -127,12 +127,12 @@ matmul_custom_npu: cmake/npu/CMakeFiles/matmul_custom_npu.dir/rule
 
 # fast build rule for target.
 matmul_custom_npu/fast:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/build
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/build
 .PHONY : matmul_custom_npu/fast
 
 # Convenience name for target.
 cmake/npu/CMakeFiles/matmul_custom_sim.dir/rule:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/CMakeFiles/matmul_custom_sim.dir/rule
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cmake/npu/CMakeFiles/matmul_custom_sim.dir/rule
 .PHONY : cmake/npu/CMakeFiles/matmul_custom_sim.dir/rule
 
 # Convenience name for target.
@@ -141,7 +141,7 @@ matmul_custom_sim: cmake/npu/CMakeFiles/matmul_custom_sim.dir/rule
 
 # fast build rule for target.
 matmul_custom_sim/fast:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_sim.dir/build.make cmake/npu/CMakeFiles/matmul_custom_sim.dir/build
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_sim.dir/build.make cmake/npu/CMakeFiles/matmul_custom_sim.dir/build
 .PHONY : matmul_custom_sim/fast
 
 __/__/main.o: __/__/main.cpp.o
@@ -149,7 +149,7 @@ __/__/main.o: __/__/main.cpp.o
 
 # target to build an object file
 __/__/main.cpp.o:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/main.cpp.o
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/main.cpp.o
 .PHONY : __/__/main.cpp.o
 
 __/__/matmul_custom.o: __/__/matmul_custom.cpp.o
@@ -157,7 +157,7 @@ __/__/matmul_custom.o: __/__/matmul_custom.cpp.o
 
 # target to build an object file
 __/__/matmul_custom.cpp.o:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/matmul_custom.cpp.o
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(MAKE) $(MAKESILENT) -f cmake/npu/CMakeFiles/matmul_custom_npu.dir/build.make cmake/npu/CMakeFiles/matmul_custom_npu.dir/__/__/matmul_custom.cpp.o
 .PHONY : __/__/matmul_custom.cpp.o
 
 # Help Target
@@ -183,6 +183,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_paral/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

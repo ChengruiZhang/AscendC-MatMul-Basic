@@ -34,7 +34,23 @@ def verify():
     print((x1_gm_test-x1_gm).sum())
     print((x2_gm_test-x2_gm).sum())
 
+def verify_gpt():
+    x1_gm = np.fromfile("./input/matrix1.bin", dtype=np.float16).reshape([4096, 4096])
+    x1_gm_32 = x1_gm.astype(np.float32)
+    print(x1_gm)
+    x2_gm = np.fromfile("./input/matrix2.bin", dtype=np.float16).reshape([4096, 4096])
+    x2_gm_32 = x2_gm.astype(np.float32)
+    print(x2_gm)
+    res = np.fromfile("./input/product_matrix.bin", dtype=np.float32).reshape([4096, 4096])
+
+    golden_res = np.matmul(x1_gm_32, x2_gm_32)    
+
+    print(np.allclose(res, golden_res))
+
 if __name__ == '__main__':
     # verify_result(sys.argv[1],sys.argv[2])
+    
+    # verify_gpt()
     verify()
+    # verify_result("./output/output.bin", "./output/product_matrix.bin")
     verify_result("./output/output.bin", "./output/golden.bin")
