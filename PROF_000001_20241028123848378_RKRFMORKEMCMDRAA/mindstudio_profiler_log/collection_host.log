@@ -1,0 +1,26 @@
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - CpuUsageAnalysis process data finished, execute time is 0.005 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - MemUsageAnalysis process data finished, execute time is 0.005 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - DiskUsageAnalysis process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - NetworkUsageAnalysis process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - HostSyscallAnalysis process data finished, execute time is 0.010 s
+2024-10-28 12:38:55 [INFO] [collection_engine.py:84] - Database process finished.
+2024-10-28 12:38:55 [INFO] [collection_engine.py:85] - Analysis finished.
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - GeLogicStreamParser process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - ParsingMemoryData process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - ParsingCpuUsageData process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_time_parser.py:104] - Start parsing sync data ...
+2024-10-28 12:38:55 [INFO] [ms_time_parser.py:107] - Parsing sync data finished...
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - NpuOpMemParser process data finished, execute time is 0.004 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - MsprofTxParser process data finished, execute time is 0.007 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - Mc2CommInfoParser process data finished, execute time is 0.041 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - MsTimeParser process data finished, execute time is 0.058 s
+2024-10-28 12:38:55 [WARNING] [data_preparation_parser.py:92] - No data preparation data, data list is empty!
+2024-10-28 12:38:55 [INFO] [data_preparation_parser.py:105] - Parsing data preparation has finished.
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - DataPreparationParser process data finished, execute time is 0.062 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - HCCLOperatiorParser process data finished, execute time is 0.026 s
+2024-10-28 12:38:55 [INFO] [cann_calculator.py:70] - start to analysis cann software callstack
+2024-10-28 12:38:55 [INFO] [cann_calculator.py:73] - Data will be parsed by msprof_analysis.so!
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - CANNCalculator process data finished, execute time is 0.033 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - StaticOpMemParser process data finished, execute time is 0.006 s
+2024-10-28 12:38:55 [INFO] [ms_multi_process.py:61] - NpuOpMemCalculator process data finished, execute time is 0.028 s
+2024-10-28 12:38:57 [INFO] [ms_multi_process.py:61] - NpuOpMemCalculator process data finished, execute time is 0.005 s
