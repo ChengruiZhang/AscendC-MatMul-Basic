@@ -72,7 +72,12 @@ int32_t main(int32_t argc, char* argv[])
     uint8_t *param1Device;
     CHECK_ACL(aclrtMallocHost((void**)(&param1Host), param1FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param1Device, param1FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
-    ReadFile("./input/x1_gm.bin", param1FileSize, param1Host, param1FileSize);
+    if (argc > 8) {
+        ReadFile(argv[8], param1FileSize, param1Host, param1FileSize);
+    } else {
+        ReadFile("./input/x1_gm.bin", param1FileSize, param1Host, param1FileSize);
+    }
+    // ReadFile("./input/x1_gm.bin", param1FileSize, param1Host, param1FileSize);
     // ReadFile("./input/matrix1.bin", param1FileSize, param1Host, param1FileSize);
     CHECK_ACL(aclrtMemcpy(param1Device, param1FileSize, param1Host, param1FileSize, ACL_MEMCPY_HOST_TO_DEVICE));
 
@@ -81,6 +86,11 @@ int32_t main(int32_t argc, char* argv[])
     CHECK_ACL(aclrtMallocHost((void**)(&param2Host), param2FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param2Device, param2FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
     ReadFile("./input/x2_gm.bin", param2FileSize, param2Host, param2FileSize);
+    if (argc > 9) {
+        ReadFile(argv[9], param2FileSize, param2Host, param2FileSize);
+    } else {
+        ReadFile("./input/x2_gm.bin", param2FileSize, param2Host, param2FileSize);
+    }
     // ReadFile("./input/matrix2.bin", param2FileSize, param2Host, param2FileSize);
     CHECK_ACL(aclrtMemcpy(param2Device, param2FileSize, param2Host, param2FileSize, ACL_MEMCPY_HOST_TO_DEVICE));
 
@@ -115,7 +125,12 @@ int32_t main(int32_t argc, char* argv[])
     std::cout << "operator time: " << average_time << " us" << std::endl;
 
     CHECK_ACL(aclrtMemcpy(param3Host, param3FileSize, param3Device, param3FileSize, ACL_MEMCPY_DEVICE_TO_HOST));
-    WriteFile("./output/output.bin", param3Host, param3FileSize);
+    if (argc > 10) {
+        WriteFile(argv[10], param3Host, param3FileSize);
+    } else {
+        WriteFile("./output/output.bin", param3Host, param3FileSize);
+    }
+    // WriteFile("./output/output.bin", param3Host, param3FileSize);
     CHECK_ACL(aclrtFree(param3Device));
     CHECK_ACL(aclrtFreeHost(param3Host));
 

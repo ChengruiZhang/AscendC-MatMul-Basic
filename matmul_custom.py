@@ -7,30 +7,27 @@ import torch
 import torch_npu
 
 def gen_golden_data(M, N, K):
-    x1_gm_type = np.float16
-    x2_gm_type = np.float16
+    x1_gm_type = torch.float16
+    x2_gm_type = torch.float16
 
-    # M = 64
-    # N = 64
-    # K = 64
-
-    x1_gm_0 = np.random.randint(1, 4, [M, K]) / 10
-    # x1_gm_0 = np.arange(M * K).astype(x1_gm_type).reshape([M, K]) / 1000
-    x1_gm = x1_gm_0.astype(x1_gm_type)
-    x1_gm_test = x1_gm_0.astype(np.float32)
-    x2_gm_0 = np.random.randint(1, 5, [K, N]).astype(x2_gm_type) / 10
-    # x2_gm_0 = np.arange(K * N).astype(x2_gm_type).reshape([K, N]) / 1
-    x2_gm = x2_gm_0.astype(x2_gm_type)
-    x2_gm_test = x2_gm_0.astype(np.float32)
-    golden = np.matmul(x1_gm.astype(np.float16), x2_gm.astype(np.float16)).astype(np.float16)
+    
+    x1_gm_0 = torch.randint(1, 4, [M, K], dtype=torch.float16, device="npu") / 10
+    x1_gm = x1_gm_0.to(x1_gm_type)
+    x1_gm_test = x1_gm_0.to(torch.float32)
+    x2_gm_0 = torch.randint(1, 4, [K, N], dtype=torch.float16, device="npu") / 10
+    x2_gm = x2_gm_0.to(x2_gm_type)
+    x2_gm_test = x2_gm_0.to(torch.float32)
+    golden = torch.matmul(x1_gm.to(torch.float16), x2_gm.to(torch.float16)).to(torch.float16)
 
     print("compute done")
 
-    x1_gm.tofile("./input/x1_gm.bin")
-    x2_gm.tofile("./input/x2_gm.bin")
-    x1_gm_test.tofile("./input/x1_gm_test.bin")
-    x2_gm_test.tofile("./input/x2_gm_test.bin")
-    golden.tofile("./output/golden.bin")
+    x1_gm.cpu().numpy().tofile("./input/x1_gm.bin")
+    x2_gm.cpu().numpy().tofile("./input/x2_gm.bin")
+    x1_gm_test.cpu().numpy().tofile("./input/x1_gm_test.bin")
+    x2_gm_test.cpu().numpy().tofile("./input/x2_gm_test.bin")
+    golden.cpu().numpy().tofile("./output/golden.bin")
+
+    print("save done")
 
 
 if __name__ == "__main__":
