@@ -1,6 +1,6 @@
-M=304
-N=816
-K=2048
+M=4096
+N=4096
+K=4096
 
 repeat=5
 batch=20
@@ -11,7 +11,7 @@ input_file2="./input/x2_gm.bin"
 output_file="./output/output.bin"
 
 # core_num=20
-device_id=0
+device_id=5
 
 bash run.sh matmul_custom Ascend910B1 AiCore npu $M $N $K $repeat $batch $core_num
 

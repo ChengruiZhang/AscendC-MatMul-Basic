@@ -11,10 +11,10 @@ def gen_golden_data(M, N, K):
     x2_gm_type = torch.float16
 
     
-    x1_gm_0 = torch.randint(1, 4, [M, K], dtype=torch.float16, device="npu") / 10
+    x1_gm_0 = torch.randint(1, 5, [M, K], dtype=torch.float16, device="npu") / 10
     x1_gm = x1_gm_0.to(x1_gm_type)
     x1_gm_test = x1_gm_0.to(torch.float32)
-    x2_gm_0 = torch.randint(1, 4, [K, N], dtype=torch.float16, device="npu") / 10
+    x2_gm_0 = torch.randint(1, 2, [K, N], dtype=torch.float16, device="npu") / 10
     x2_gm = x2_gm_0.to(x2_gm_type)
     x2_gm_test = x2_gm_0.to(torch.float32)
     golden = torch.matmul(x1_gm.to(torch.float16), x2_gm.to(torch.float16)).to(torch.float16)
