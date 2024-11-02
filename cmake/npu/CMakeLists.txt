@@ -9,15 +9,15 @@ add_executable(${smoke_testcase}_npu
     ${SRC_FILES}
 )
 
-# target_compile_options(${smoke_testcase}_npu PRIVATE
-#     -O2
-#     -std=c++17
-# )
 target_compile_options(${smoke_testcase}_npu PRIVATE
-    -O0
-    -g
+    -O2
     -std=c++17
 )
+# target_compile_options(${smoke_testcase}_npu PRIVATE
+#     -O0
+#     -g
+#     -std=c++17
+# )
 
 target_link_directories(${smoke_testcase}_npu PRIVATE
     ${ASCEND_INSTALL_PATH}/lib64
