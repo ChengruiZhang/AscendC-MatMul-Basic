@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1
+CMAKE_SOURCE_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build
+CMAKE_BINARY_DIR = /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build
 
 # Utility rule file for matmul_custom_sim.
 
@@ -74,10 +74,10 @@ cmake/npu/CMakeFiles/matmul_custom_sim.dir/build: matmul_custom_sim
 .PHONY : cmake/npu/CMakeFiles/matmul_custom_sim.dir/build
 
 cmake/npu/CMakeFiles/matmul_custom_sim.dir/clean:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build/cmake/npu && $(CMAKE_COMMAND) -P CMakeFiles/matmul_custom_sim.dir/cmake_clean.cmake
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu && $(CMAKE_COMMAND) -P CMakeFiles/matmul_custom_sim.dir/cmake_clean.cmake
 .PHONY : cmake/npu/CMakeFiles/matmul_custom_sim.dir/clean
 
 cmake/npu/CMakeFiles/matmul_custom_sim.dir/depend:
-	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1 /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/cmake/npu /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build/cmake/npu /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBL1/build/cmake/npu/CMakeFiles/matmul_custom_sim.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/cmake/npu /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu/CMakeFiles/matmul_custom_sim.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : cmake/npu/CMakeFiles/matmul_custom_sim.dir/depend
 

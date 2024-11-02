@@ -51,6 +51,6 @@ if __name__ == '__main__':
     # verify_result(sys.argv[1],sys.argv[2])
     
     # verify_gpt()
-    verify()
+    # verify()
     # verify_result("./output/output.bin", "./output/product_matrix.bin")
     verify_result("./output/output.bin", "./output/golden.bin")

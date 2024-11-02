@@ -1,0 +1,3 @@
+Op Name=matmul_custom_m128_n256_k128
+Block Dim=20
+Run Soc Version=Ascend910B3

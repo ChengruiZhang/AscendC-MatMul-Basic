@@ -1,0 +1,2 @@
+block_id,sub_block_id,aic_time(us),aic_total_cycles,aic_l0a_read_bw(GB/s),aic_l0a_write_bw(GB/s),aic_l0b_read_bw(GB/s),aic_l0b_write_bw(GB/s),aic_l0c_read_bw_cube(GB/s),aic_l0c_write_bw_cube(GB/s),aiv_time(us),aiv_total_cycles,
+0,cube0,32.500557,58501,3.755945,0.938986,15.023782,1.877973,3.755945,7.511891,N/A,N/A,
