@@ -110,16 +110,9 @@ public:
     */
     __aicore__ inline void Init(GM_ADDR A, GM_ADDR B, GM_ADDR C)
     {
-        // auto coreidx = GetBlockIdx();
-        // GetOffset(coreidx);
-        // GetOffset(CoreIdx);
         aGM.SetGlobalBuffer((__gm__ half*)A);
         bGM.SetGlobalBuffer((__gm__ half*)B);
         cGM.SetGlobalBuffer((__gm__ float*)C);
-        
-        // aGM.SetGlobalBuffer((__gm__ half*)A + MOffset);
-        // bGM.SetGlobalBuffer((__gm__ half*)B + NOffset);
-        // cGM.SetGlobalBuffer((__gm__ float*)C + ResOffset);
     }
     __aicore__ inline void Process(){
 
@@ -160,24 +153,13 @@ public:
                     mmadParams.k = KL0Len;
                     
                     SplitA(a1Local, DouBufL1, DouBufL0); // a2Local alloc, enque
-                    // LocalTensor<half> a2Local = inQueueA2.DeQue<half>();
-
-                    // split matrix B into 2 parts, [32, 16] and [32, 16]
-                    // for (int k = 0; k < 1; ++k) {
                     SplitB(b1Local, DouBufL1, DouBufL0); // b2Local alloc, enque
                     Compute(mmadParams, DouBufL1, DouBufL0); // c1 alloc,  b2Local deque
-                    // }
-                    // mmadParams.cmatrixInitVal = false;
-                    // inQueueA2.FreeTensor(a2Local);
-                    // PipeBarrier<PIPE_ALL>();
                 }
                 inQueueA1.FreeTensor(a1Local);
                 inQueueB1.FreeTensor(b1Local);
-                // PipeBarrier<PIPE_ALL>();
             }
-            // PipeBarrier<PIPE_ALL>();
         }
-        // outQueueCO1.EnQue<float>(c1Local);
         CopyOut();
     }
 
@@ -423,18 +405,12 @@ void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, uint8_t* A,
     if (blockDim > TotalResBlocks) { blockDim = uint32_t(TotalResBlocks); }
     // else {CHECK_ACL(false);}
 
-    // uint16_t CoreTilingM = (BlockNumM - 1) / height;
-    // uint16_t CoreTilingN = (BlockNumN - 1) / width;
-
     OpType optype = OpType::fp16; 
 
     // uint16_t TilingL1K = L1BufferSize / (BaseM * BaseK + BaseN * BaseK) / optype;
     // TilingL1K -= TilingL1K % 2;
     // TilingL1K = TilingL1K > 0 ? TilingL1K : 1;
     uint16_t TilingL1K = 4;
-    // uint16_t maxL1K = L1BufferSize / (BaseM * BaseK + BaseN * BaseK) / optype;
-    // attr_.TilingL1K = L1BufferSize / (BaseM * BaseK + BaseN * BaseK) / optype;
-    // attr_.BlockNumM = BlockNumM; attr_.BlockNumN = BlockNumN; attr_.BlockNumK = BlockNumK;
 
     matmul_custom_m128_n256_k128<<<blockDim, l2ctrl, stream>>>(A, B, C, 
                                                                M, N, K, 
