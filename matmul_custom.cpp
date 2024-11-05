@@ -58,17 +58,17 @@ public:
         TotalResBlocks = TotalResBlocks_;
         pipe = pipe_;
 
-        aL1Size = BaseM * TilingL1K * BaseK; // 读取TiliingL1K个basic block，这里是4
-        bL1Size = BaseN * TilingL1K * BaseK;
+        aL1Size = BaseM * BaseK * 2; // 读取2个basic block，这里是4: (128*256*2/1024=64)*2 double buffer
+        bL1Size = BaseN * BaseK * 2;
         aL0Size = BaseM * BaseK;
-        bL0Size = BaseK * BaseN;
+        bL0Size = BaseK * BaseN; // 128*128*2/1024=32 double buffer
         cSize = BaseM * BaseN;
         
-        pipe->InitBuffer(inQueueA1, 2, aL1Size * sizeof(half) / 2);
+        pipe->InitBuffer(inQueueA1, 2, aL1Size * sizeof(half));
         pipe->InitBuffer(inQueueA2, 2, aL0Size * sizeof(half));
-        pipe->InitBuffer(inQueueB1, 2, bL1Size * sizeof(half) / 2);
+        pipe->InitBuffer(inQueueB1, 2, bL1Size * sizeof(half));
         pipe->InitBuffer(inQueueB2, 2, bL0Size * sizeof(half));
-        pipe->InitBuffer(outQueueCO1, 1, cSize * sizeof(float));
+        pipe->InitBuffer(outQueueCO1, 2, cSize * sizeof(half));
     }
     /*
     * @brief: 获取每一个核的偏移，保证每一次读取到核上的地址为当前输入A、B矩阵及输出C矩阵的首地址；
@@ -112,55 +112,60 @@ public:
     {
         aGM.SetGlobalBuffer((__gm__ half*)A);
         bGM.SetGlobalBuffer((__gm__ half*)B);
-        cGM.SetGlobalBuffer((__gm__ float*)C);
+        cGM.SetGlobalBuffer((__gm__ half*)C);
     }
+    /* @brief: 在L1， L0AB和L0C上均进行double buffer，假定base块为M0=128，N0=128，K0=128，则
+    * 每一个core的每一次循环得出的res大小为M0 * N0，每两次循环完成一次double buffer，需满足M0*N0*2*type小于L0C的大小
+    * 在L1上，每次读取L1DATA=(BaseK * 2) * (BaseM + BaseN)大小的数据，需满足L1DATA*2*type小于L1的大小，此处的2表示在L1进行double buffer
+    * 在L0AB上，每次读取L0ABDATA=BaseK * (BaseM or BaseN)大小的数据，需满足L0ABDATA*2*type小于L0AB的大小，此处的2表示在L0进行double buffer
+    * L0AB上的double buffer是针对L1的，会在L1的其中一个double buffer的数据中轮询读取
+    */
     __aicore__ inline void Process(){
 
-        MmadParams mmadParams;
-        mmadParams.m = MLen;
-        mmadParams.n = NLen;
-        mmadParams.cmatrixInitVal = true;
+        for(int64_t loop_idx = 0; loop_idx < TotalResBlocks; loop_idx++){
 
-        LocalTensor<float> c1Local = outQueueCO1.AllocTensor<float>();
-        outQueueCO1.EnQue<float>(c1Local);
+            if (loop_idx % GetBlockNum() != GetBlockIdx()) {
+                continue;
+            }
 
-        // split K by L1
-        // 将K在L1级别进行切分，每次读取至多TilingL1K*BaseK个K
-        for (int L2KIdx = 0; L2KIdx < BlockNumK; L2KIdx += TilingL1K) {
-            // 当前的L1级别的K大小
-            KL1Len = (L2KIdx + TilingL1K) > BlockNumK ? K - L2KIdx * BaseK : BaseK * TilingL1K;
-            kL1Blocks = KL1Len / 16;
-            
-            // 记录L1级别tiling后, 双缓存中K的长度
-            GetL1DouBufLen(KL1Len);
+            // 获取偏移
+            GetOffset(loop_idx); // 
 
-            // L1 Double buffer -- K dim
-            // L1中读取的次数
-            for (int DouBufL1 = 0; DouBufL1 < 2; DouBufL1++) {
-                // ND2NZ, GM to L1
-                CopyIn(L2KIdx, DouBufL1); // a1Local, b1Local: Alloc & EnQueue
+            MmadParams mmadParams;
+            mmadParams.m = MLen;
+            mmadParams.n = NLen;
+            mmadParams.cmatrixInitVal = true;
+
+            LocalTensor<float> c1Local = outQueueCO1.AllocTensor<float>();
+            outQueueCO1.EnQue<float>(c1Local);
+
+            // split K by L1
+            for (int L2KIdx = 0; L2KIdx < BlockNumK; L2KIdx += TilingL1K){
+                
+                KL1Len = (L2KIdx + TilingL1K) > BlockNumK ? K - L2KIdx * BaseK : BaseK * TilingL1K;
+                KL1Blocks = KL1Len / 16;
+
+                CopyIn(L2KIdx); // a1Local, b1Local: Alloc & EnQueue
+
                 LocalTensor<half> a1Local = inQueueA1.DeQue<half>();
                 LocalTensor<half> b1Local = inQueueB1.DeQue<half>();
-                
-                // split K by L0, read 1 base K to L0B, up to TilingL1K itrations
-                // L1的K需要被读取进L0的次数
-                // L0 double buffer
-                uint16_t TilingL0K = (KL1DouBuf[DouBufL1] + BaseK - 1) / BaseK;
+
+                uint16_t TilingL0K = (KL1Len + BaseK - 1) / BaseK;
                 for (int DouBufL0 = 0; DouBufL0 < TilingL0K; DouBufL0++){
-                    
-                    KL0Len = (DouBufL0 + 1) * BaseK > KL1DouBuf[DouBufL1] ? KL1DouBuf[DouBufL1] - DouBufL0 * BaseK : BaseK;
-                    kL0Blocks = KL0Len / 16;
+
+                    KL0Len = (DouBufL0 + 1) * BaseK > KL1Len ? KL1Len - DouBufL0 * BaseK : BaseK;
+                    KL0Blocks = KL0Len / 16;
                     mmadParams.k = KL0Len;
-                    
-                    SplitA(a1Local, DouBufL1, DouBufL0); // a2Local alloc, enque
-                    SplitB(b1Local, DouBufL1, DouBufL0); // b2Local alloc, enque
-                    Compute(mmadParams, DouBufL1, DouBufL0); // c1 alloc,  b2Local deque
+
+                    SplitA(a1Local, DouBufL0); // a2Local alloc, enque
+                    SplitB(b1Local, DouBufL0); // b2Local alloc, enque
+                    Compute(mmadParams); // c1 alloc,  b2Local deque
                 }
                 inQueueA1.FreeTensor(a1Local);
                 inQueueB1.FreeTensor(b1Local);
             }
+            CopyOut();
         }
-        CopyOut();
     }
 
 private:
@@ -186,15 +191,12 @@ private:
     * 实际搬运的矩阵大小为A[MLen, KL1Len], B[KL1Len, NLen]
     * @param: L2KIdx 当前核的K索引，为TilingL1K的倍数
     */
-    __aicore__ inline void CopyIn(int L2KIdx, const int DouBuf){
+    __aicore__ inline void CopyIn(int L2KIdx){
         LocalTensor<half> a1Local = inQueueA1.AllocTensor<half>();
         LocalTensor<half> b1Local = inQueueB1.AllocTensor<half>();
 
         int MDouBufGMOffset = L2KIdx * BaseK;
-        int MDouBufL1Offset = DouBuf * KL1DouBuf[0];
-
         int NDouBufGMOffset = L2KIdx * BaseK * N;
-        int NDouBufL1Offset = DouBuf * KL1DouBuf[0] * N;
 
         int ML1DstOffset = 0;
         int NL1DstOffset = 0;
@@ -202,8 +204,8 @@ private:
         // int ML1DstOffset = DouBuf * aL1Size / 2;
         // int NL1DstOffset = DouBuf * bL1Size / 2;
 
-        CopyND2NZ(a1Local, aGM[MOffset], MLen, KL1DouBuf[DouBuf], K, MDouBufGMOffset + MDouBufL1Offset, ML1DstOffset); 
-        CopyND2NZ(b1Local, bGM[NOffset], KL1DouBuf[DouBuf], NLen, N, NDouBufGMOffset + NDouBufL1Offset, NL1DstOffset);
+        CopyND2NZ(a1Local, aGM[MOffset], MLen, KL1Len, K, MDouBufGMOffset, ML1DstOffset); 
+        CopyND2NZ(b1Local, bGM[NOffset], KL1Len, NLen, N, NDouBufGMOffset, NL1DstOffset);
 
         inQueueA1.EnQue(a1Local);
         inQueueB1.EnQue(b1Local);
@@ -213,18 +215,16 @@ private:
     * 搬运前为Nz格式，搬运后为Zz格式
     * @param: DouBufL0, 从L1搬向L0的block索引
     */
-    __aicore__ inline void SplitA(LocalTensor<half>& a1Local, const int DouBufL1, const int DouBufL0){
+    __aicore__ inline void SplitA(LocalTensor<half>& a1Local, const int DouBufL0){
 
         LocalTensor<half> a2Local = inQueueA2.AllocTensor<half>();
 
-        // int MDouBufL1Offset = DouBufL1 * aL1Size / 2;
         int MDouBufL1Offset = 0;
         int srcOffset = MDouBufL1Offset + DouBufL0 * BaseK * MLen;
-        // int dstOffset = DouBufL1 * aL0Size;
         int dstOffset = 0;
 
         LoadData2dParams loadDataParams;
-        loadDataParams.repeatTimes = kL0Blocks;
+        loadDataParams.repeatTimes = KL0Blocks;
         loadDataParams.srcStride = mBlocks;
         loadDataParams.ifTranspose = false;
 
@@ -232,7 +232,7 @@ private:
         for (int i = 0; i < mBlocks; ++i) {
             LoadData(a2Local[dstOffset], a1Local[srcOffset], loadDataParams);
             srcOffset += 16 * 16;
-            dstOffset += kL0Blocks * 16 * 16;
+            dstOffset += KL0Blocks * 16 * 16;
         }
         inQueueA2.EnQue<half>(a2Local);
 
@@ -241,24 +241,21 @@ private:
     * @brief: 将L1Buffer中的B矩阵数据[KL1Len, NLen]搬运到L0A中，实际搬运长度为[KL0Len, NLen]
     * 搬运前为Nz格式，搬运后为Zn格式
     */
-    __aicore__ inline void SplitB(const LocalTensor<half>& b1Local, const int DouBufL1, const int DouBufL0){
+    __aicore__ inline void SplitB(const LocalTensor<half>& b1Local, const int DouBufL0){
         
         LocalTensor<half> b2Local = inQueueB2.AllocTensor<half>();
 
-        // int NDouBufL0Offset = DouBufL1 * bL1Size / 2;
         int NDouBufL0Offset = 0;
         int srcOffset = NDouBufL0Offset + DouBufL0 * 16 * BaseK;
-        // int srcOffset = L1SplitIdx * 16 * 16 * kL0Blocks;
-        // int dstOffset = DouBufL1 * bL0Size;
         int dstOffset = 0;
 
         // transform Nz to Zn
         LoadData2dParams loadDataParams;
         loadDataParams.repeatTimes = nBlocks;
-        loadDataParams.srcStride = KL1DouBufBlocks[DouBufL1];
+        loadDataParams.srcStride = KL1Blocks;
         loadDataParams.ifTranspose = true;
 
-        for (int i = 0; i < kL0Blocks; i++){
+        for (int i = 0; i < KL0Blocks; i++){
             LoadData(b2Local[dstOffset], b1Local[srcOffset], loadDataParams);
             srcOffset += 16 * 16;
             dstOffset += nBlocks * 16 * 16;
@@ -269,14 +266,11 @@ private:
     /*
     @brief: 将L0A、L0B中的数据进行计算，计算结果存放在L0C中，实际计算长度为[MLen, NLen]
     */
-    __aicore__ inline void Compute(MmadParams& mmadParams, const int DouBufL1, const int DouBufL0)
+    __aicore__ inline void Compute(MmadParams& mmadParams)
     {
         LocalTensor<half> a2Local = inQueueA2.DeQue<half>();
         LocalTensor<half> b2Local = inQueueB2.DeQue<half>();
         LocalTensor<float> c1Local = outQueueCO1.DeQue<float>();
-
-        // int srcOffset = L1SplitIdx * 16 * 16 * mBlocks;
-        int dstOffset = 0;
 
         // Nz
         Mmad(c1Local, a2Local, b2Local, mmadParams);
@@ -299,6 +293,7 @@ private:
         fixpipeParams.srcStride = MLen; // 搬运MLen次，一次搬运NLen大小
         fixpipeParams.dstStride = N; // 每次搬运时的目标地址的偏移
         fixpipeParams.ndNum = 1;
+        fixpipeParams.quantPre = QuantMode_t::F322F16;
         Fixpipe(cGM[ResOffset], c1Local, fixpipeParams);
 
         outQueueCO1.FreeTensor(c1Local);
@@ -316,7 +311,7 @@ private:
     TQue<QuePosition::CO2, 2> outQueueCO2;
 
     GlobalTensor<half> aGM, bGM;
-    GlobalTensor<float> cGM;
+    GlobalTensor<half> cGM;
 
     uint16_t M, N, K;
     uint16_t BaseM, BaseN, BaseK;
@@ -328,7 +323,7 @@ private:
     // Attr attr;
 
     uint32_t aL1Size, bL1Size, aL0Size, bL0Size, cSize;
-    uint16_t mBlocks, nBlocks, kBlocks, kL1Blocks, kL0Blocks;
+    uint16_t mBlocks, nBlocks, kBlocks, KL1Blocks, KL0Blocks;
     uint16_t TotalResBlocks;
     int64_t coreidx;
 
@@ -354,15 +349,7 @@ extern "C" __global__ __aicore__ void matmul_custom_m128_n256_k128(GM_ADDR A, GM
                 TotalResBlocks,
                 &pipe);
     op.Init(A, B, C);
-    
-    // div core, each core processes (TotalResBlocks / CoreNum, or (TotalResBlocks + CoreNum - 1) / CoreNum)
-    // Base Blocks
-    auto CoreIdx = GetBlockIdx();
-    for (; CoreIdx < TotalResBlocks; CoreIdx += 20)
-    {
-        op.GetOffset(CoreIdx);
-        op.Process();
-    }
+    op.Process();
 }
 
 #ifndef __CCE_KT_TEST__40
@@ -375,8 +362,8 @@ void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, uint8_t* A,
     // 128, 256, K -- 85.3
     // 192, 160, K -- 87.3
     uint16_t BaseM = 128;
-    uint16_t BaseN = 256;
-    uint16_t BaseK = 64;
+    uint16_t BaseN = 128;
+    uint16_t BaseK = 128;
     // Attr attr_(BaseM, BaseN, BaseK);
 
     // uint16_t block = 16;
@@ -410,7 +397,7 @@ void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, uint8_t* A,
     // uint16_t TilingL1K = L1BufferSize / (BaseM * BaseK + BaseN * BaseK) / optype;
     // TilingL1K -= TilingL1K % 2;
     // TilingL1K = TilingL1K > 0 ? TilingL1K : 1;
-    uint16_t TilingL1K = 4;
+    uint16_t TilingL1K = 2;
 
     matmul_custom_m128_n256_k128<<<blockDim, l2ctrl, stream>>>(A, B, C, 
                                                                M, N, K, 

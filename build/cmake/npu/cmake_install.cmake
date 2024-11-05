@@ -1,4 +1,4 @@
-# Install script for directory: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/cmake/npu
+# Install script for directory: /home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf/cmake/npu
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

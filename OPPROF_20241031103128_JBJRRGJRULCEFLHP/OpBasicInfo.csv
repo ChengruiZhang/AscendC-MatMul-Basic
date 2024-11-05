@@ -1,2 +1,0 @@
-Op Name,Op Type,Task Duration(us),Block Dim,Mix Block Dim,
-matmul_custom_m128_n256_k128,cube,112.822258,20,N/A,

@@ -6,7 +6,7 @@ loss = 1e-3
 minimum = 10e-10
 
 def verify_result(real_result, golden):
-    real_result = np.fromfile(real_result, dtype=np.float32)
+    real_result = np.fromfile(real_result, dtype=np.float16)
     golden = np.fromfile(golden, dtype=np.float16)
     print(real_result)
     print(golden)

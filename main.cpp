@@ -42,7 +42,7 @@ int32_t main(int32_t argc, char* argv[])
 
     size_t param1FileSize = M * K * sizeof(uint16_t);  // uint16_t represent half
     size_t param2FileSize = K * N * sizeof(uint16_t);  // uint16_t represent half
-    size_t param3FileSize = M * N * sizeof(float);
+    size_t param3FileSize = M * N * sizeof(uint16_t);
 
 #ifdef __CCE_KT_TEST__
     uint8_t *param1 = (uint8_t *)AscendC::GmAlloc(param1FileSize);
