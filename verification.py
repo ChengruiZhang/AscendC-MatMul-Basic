@@ -6,7 +6,7 @@ loss = 1e-3
 minimum = 10e-10
 
 def verify_result(real_result, golden):
-    real_result = np.fromfile(real_result, dtype=np.float32)
+    real_result = np.fromfile(real_result, dtype=np.float16)
     golden = np.fromfile(golden, dtype=np.float16)
     print(real_result)
     print(golden)
@@ -23,16 +23,16 @@ def verify_result(real_result, golden):
 
 def verify():
     x1_gm = np.fromfile("./input/x1_gm.bin", dtype=np.float16)
-    print(x1_gm)
-    x1_gm_test = np.fromfile("./input/x1_gm_test.bin", dtype=np.float32)
-    print(x1_gm_test)
+    # print(x1_gm)
+    # x1_gm_test = np.fromfile("./input/x1_gm_test.bin", dtype=np.float32)
+    # print(x1_gm_test)
     x2_gm = np.fromfile("./input/x2_gm.bin", dtype=np.float16)
-    print(x2_gm)
-    x2_gm_test = np.fromfile("./input/x2_gm_test.bin", dtype=np.float32)
-    print(x2_gm_test)
+    # print(x2_gm)
+    # x2_gm_test = np.fromfile("./input/x2_gm_test.bin", dtype=np.float32)
+    # print(x2_gm_test)
 
-    print((x1_gm_test-x1_gm).sum())
-    print((x2_gm_test-x2_gm).sum())
+    # print((x1_gm_test-x1_gm).sum())
+    # print((x2_gm_test-x2_gm).sum())
 
 def verify_gpt():
     x1_gm = np.fromfile("./input/matrix1.bin", dtype=np.float16).reshape([4096, 4096])
@@ -51,6 +51,6 @@ if __name__ == '__main__':
     # verify_result(sys.argv[1],sys.argv[2])
     
     # verify_gpt()
-    # verify()
+    verify()
     # verify_result("./output/output.bin", "./output/product_matrix.bin")
     verify_result("./output/output.bin", "./output/golden.bin")

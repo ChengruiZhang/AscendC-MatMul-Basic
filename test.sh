@@ -7,7 +7,7 @@ K=$3
 repeat=5
 batch=20
 core_num=20
-device_id=4
+device_id=3
 
 input_file1="./input/x1_gm.bin"
 input_file2="./input/x2_gm.bin"

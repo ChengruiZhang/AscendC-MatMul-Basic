@@ -1,6 +1,6 @@
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/CMakeFiles/edit_cache.dir
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/CMakeFiles/rebuild_cache.dir
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu/CMakeFiles/matmul_custom_sim.dir
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu/CMakeFiles/edit_cache.dir
-/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/build/cmake/npu/CMakeFiles/rebuild_cache.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/CMakeFiles/edit_cache.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/CMakeFiles/rebuild_cache.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/cmake/npu/CMakeFiles/matmul_custom_npu.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/cmake/npu/CMakeFiles/matmul_custom_sim.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/cmake/npu/CMakeFiles/edit_cache.dir
+/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/build/cmake/npu/CMakeFiles/rebuild_cache.dir

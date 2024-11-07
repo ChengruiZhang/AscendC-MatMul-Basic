@@ -10,6 +10,7 @@
  */
 
 #include "kernel_operator.h"
+#include "matmul_custom.h"
 // #include "data_utils.h"
 using namespace AscendC;
 
@@ -19,6 +20,21 @@ enum OpType {
     fp16 = 2,
     int8 = 1,
 };
+
+// constexpr int64_t L1_PINGPONG_BUFFER_LEN = 64 * 1024 / sizeof(half);    // 64 KB
+// constexpr int64_t L0AB_PINGPONG_BUFFER_LEN = 32 * 1024 / sizeof(half);   // 32 KB
+// constexpr int64_t L0C_PINGPONG_BUFFER_LEN = 64 * 1024 / sizeof(float);    // 64 KB
+
+
+// constexpr int64_t CUBE_M0 = 16;
+// constexpr int64_t CUBE_N0 = 16;
+// constexpr int64_t CUBE_K0 = 32 / sizeof(half);
+// constexpr int64_t CUBE_MATRIX_SIZE = CUBE_K0 * CUBE_N0;
+
+// constexpr int8_t EVENT_ID0 = 0;
+// constexpr int8_t EVENT_ID1 = 1;
+// constexpr int8_t EVENT_ID2 = 2;
+// constexpr int8_t EVENT_ID3 = 3;
 
 // struct Offset {
 //     uint16_t height;
@@ -49,26 +65,19 @@ public:
     __aicore__ inline void InitAttr(uint16_t BaseM_, uint16_t BaseN_, uint16_t BaseK_,
                                     uint16_t BlockNumM_, uint16_t BlockNumN_, uint16_t BlockNumK_,
                                     uint16_t TilingL1K_,
-                                    uint16_t TotalResBlocks_,
-                                    TPipe *pipe_){
+                                    uint16_t TotalResBlocks_){
         // attr = attr_;
         BaseM = BaseM_; BaseN = BaseN_; BaseK = BaseK_;
         BlockNumM = BlockNumM_; BlockNumN = BlockNumN_; BlockNumK = BlockNumK_;
         TilingL1K = TilingL1K_;
         TotalResBlocks = TotalResBlocks_;
-        pipe = pipe_;
 
-        aL1Size = BaseM * TilingL1K * BaseK; // 读取TiliingL1K个basic block，这里是4
-        bL1Size = BaseN * TilingL1K * BaseK;
+        aL1Size = BaseM * BaseK * 2; // 读取2个basic block，这里是4: (128*256*2/1024=64)*2 double buffer
+        bL1Size = BaseN * BaseK * 2;
         aL0Size = BaseM * BaseK;
-        bL0Size = BaseK * BaseN;
-        cSize = BaseM * BaseN;
+        bL0Size = BaseK * BaseN; // 128*128*2/1024=32 double buffer
+        cSize = BaseM * BaseN * 2;
         
-        pipe->InitBuffer(inQueueA1, 2, aL1Size * sizeof(half) / 2);
-        pipe->InitBuffer(inQueueA2, 2, aL0Size * sizeof(half));
-        pipe->InitBuffer(inQueueB1, 2, bL1Size * sizeof(half) / 2);
-        pipe->InitBuffer(inQueueB2, 2, bL0Size * sizeof(half));
-        pipe->InitBuffer(outQueueCO1, 1, cSize * sizeof(float));
     }
     /*
     * @brief: 获取每一个核的偏移，保证每一次读取到核上的地址为当前输入A、B矩阵及输出C矩阵的首地址；
@@ -87,80 +96,257 @@ public:
         nBlocks = NLen / 16;
     }
     /*
-    * @brief: 获取double buffer的K长度
-    * @param: KL1DouBufBase[2]记录K共需要几次Compute计算
-    * @param: KL1DouBuf[2]记录当前K的长度
-    */
-    __aicore__ inline void GetL1DouBufLen(const int CurLen){
-        
-        int CurBaseNum = CurLen / BaseK;
-
-        KL1DouBufBase[1] = CurBaseNum / 2;
-        KL1DouBufBase[0] = CurBaseNum - KL1DouBufBase[1];
-        
-        KL1DouBuf[0] = KL1DouBufBase[0] * BaseK;
-        KL1DouBuf[1] = CurLen - KL1DouBuf[0];
-        
-        KL1DouBufBlocks[0] = KL1DouBuf[0] / 16;
-        KL1DouBufBlocks[1] = KL1DouBuf[1] / 16;
-
-    }
-    /*
     * @brief: 初始化输入A、B矩阵及输出C矩阵的全局Buffer
     */
-    __aicore__ inline void Init(GM_ADDR A, GM_ADDR B, GM_ADDR C)
+    __aicore__ inline void Init(GM_ADDR A_, 
+                                GM_ADDR B_, 
+                                GM_ADDR C_)
     {
-        aGM.SetGlobalBuffer((__gm__ half*)A);
-        bGM.SetGlobalBuffer((__gm__ half*)B);
-        cGM.SetGlobalBuffer((__gm__ float*)C);
+        gm_A = (__gm__ half* __restrict__) A_; 
+        gm_B = (__gm__ half* __restrict__) B_; 
+        gm_C = (__gm__ half* __restrict__) C_;
     }
+    template <typename T = half>
+    __aicore__ inline void SetTensorAddr(LocalTensor<T>& tensor, uint32_t dataLen, uint32_t bufferAddr, uint8_t logicPos){
+        TBuffAddr TBuffAddr_;
+        TBuffAddr_.dataLen = dataLen;
+        TBuffAddr_.bufferAddr = bufferAddr;
+        TBuffAddr_.logicPos = logicPos;
+        tensor.SetAddr(TBuffAddr_);
+    }
+    /* @brief: 在L1， L0AB和L0C上均进行double buffer，假定base块为M0=128，N0=128，K0=128，则
+    * 每一个core的每一次循环得出的res大小为M0 * N0，每两次循环完成一次double buffer，需满足M0*N0*2*type小于L0C的大小
+    * 在L1上，每次读取L1DATA=(BaseK * 2) * (BaseM + BaseN)大小的数据，需满足L1DATA*2*type小于L1的大小，此处的2表示在L1进行double buffer
+    * 在L0AB上，每次读取L0ABDATA=BaseK * (BaseM or BaseN)大小的数据，需满足L0ABDATA*2*type小于L0AB的大小，此处的2表示在L0进行double buffer
+    * L0AB上的double buffer是针对L1的，会在L1的其中一个double buffer的数据中轮询读取
+    * 此处的BaseMNK都是针对L1
+    */
     __aicore__ inline void Process(){
 
-        MmadParams mmadParams;
-        mmadParams.m = MLen;
-        mmadParams.n = NLen;
-        mmadParams.cmatrixInitVal = true;
+        // LocalTensor<half> L1_tensor_a, L1_tensor_b, L0A_tensor, L0B_tensor;
+        // LocalTensor<float> L0C_tensor;
 
-        LocalTensor<float> c1Local = outQueueCO1.AllocTensor<float>();
-        outQueueCO1.EnQue<float>(c1Local);
+        auto M0 = BaseM; auto N0 = BaseN; auto K0 = BaseK;
 
-        // split K by L1
-        // 将K在L1级别进行切分，每次读取至多TilingL1K*BaseK个K
-        for (int L2KIdx = 0; L2KIdx < BlockNumK; L2KIdx += TilingL1K) {
-            // 当前的L1级别的K大小
-            KL1Len = (L2KIdx + TilingL1K) > BlockNumK ? K - L2KIdx * BaseK : BaseK * TilingL1K;
-            kL1Blocks = KL1Len / 16;
+        int64_t lda = M; int64_t ldb = K; int64_t ldc = M;
+
+        auto L1_base_a = reinterpret_cast<__cbuf__ __fp16 *>((uintptr_t)0);            // 128 KB 128*256*2/1024=64 double buffer
+        auto L1_base_b = reinterpret_cast<__cbuf__ __fp16 *>((uintptr_t)(128 * 1024)); // 128 KB 256*128*2/1024=64 double buffer
+
+        auto L0A_base = reinterpret_cast<__ca__ __fp16 *>((uintptr_t)0); // L0A 128*128*2/1024=32 double buffer
+        auto L0B_base = reinterpret_cast<__cb__ __fp16 *>((uintptr_t)0); // L0B 128*128*2/1024=32 double buffer
+        auto L0C_base = reinterpret_cast<__cc__ float *>((uintptr_t)0); // L0C 128*128*4/1024=64 double buffer
+
+        int64_t m_loop = (M + BaseM - 1) / BaseM; // 在 M 方向分的核数
+        int64_t n_loop = (N + BaseN - 1) / BaseN; // 在 N 方向分的核数
+        int64_t k_loop = (K + BaseK - 1) / BaseK; // K 方向循环的次数
+        int64_t loop = m_loop * n_loop; // 总需要的核数
+        
+        int64_t loop_ping_flag = 1;
+        int64_t k_loop_ping_flag = 1;
+
+        SetFlagImpl<HardEvent::FIX_M>(EVENT_ID0);
+        SetFlagImpl<HardEvent::FIX_M>(EVENT_ID1);
+
+        SetFlagImpl<HardEvent::MTE1_MTE2>(EVENT_ID0);
+        SetFlagImpl<HardEvent::MTE1_MTE2>(EVENT_ID1);
+        SetFlagImpl<HardEvent::MTE1_MTE2>(EVENT_ID2);
+        SetFlagImpl<HardEvent::MTE1_MTE2>(EVENT_ID3);
+        
+        SetFlagImpl<HardEvent::M_MTE1>(EVENT_ID0);
+        SetFlagImpl<HardEvent::M_MTE1>(EVENT_ID1);
+
+        for (int64_t loop_idx = 0; loop_idx < TotalResBlocks; loop_idx++){
             
-            // 记录L1级别tiling后, 双缓存中K的长度
-            GetL1DouBufLen(KL1Len);
+            // 该循环计算L1上B分块(N0, K0)和A分块(K0, M0)的矩阵乘法并加到L0C上
 
-            // L1 Double buffer -- K dim
-            // L1中读取的次数
-            for (int DouBufL1 = 0; DouBufL1 < 2; DouBufL1++) {
-                // ND2NZ, GM to L1
-                CopyIn(L2KIdx, DouBufL1); // a1Local, b1Local: Alloc & EnQueue
-                LocalTensor<half> a1Local = inQueueA1.DeQue<half>();
-                LocalTensor<half> b1Local = inQueueB1.DeQue<half>();
-                
-                // split K by L0, read 1 base K to L0B, up to TilingL1K itrations
-                // L1的K需要被读取进L0的次数
-                // L0 double buffer
-                uint16_t TilingL0K = (KL1DouBuf[DouBufL1] + BaseK - 1) / BaseK;
-                for (int DouBufL0 = 0; DouBufL0 < TilingL0K; DouBufL0++){
-                    
-                    KL0Len = (DouBufL0 + 1) * BaseK > KL1DouBuf[DouBufL1] ? KL1DouBuf[DouBufL1] - DouBufL0 * BaseK : BaseK;
-                    kL0Blocks = KL0Len / 16;
-                    mmadParams.k = KL0Len;
-                    
-                    SplitA(a1Local, DouBufL1, DouBufL0); // a2Local alloc, enque
-                    SplitB(b1Local, DouBufL1, DouBufL0); // b2Local alloc, enque
-                    Compute(mmadParams, DouBufL1, DouBufL0); // c1 alloc,  b2Local deque
-                }
-                inQueueA1.FreeTensor(a1Local);
-                inQueueB1.FreeTensor(b1Local);
+            // 平均分配给物理核心，不是自己的任务就略过到下一项
+    
+            if (loop_idx % GetBlockNum() != GetBlockIdx()) {
+                continue;
             }
+            
+            auto L0C_buf = loop_ping_flag ? L0C_base + L0C_PINGPONG_BUFFER_LEN : L0C_base;
+            auto LOOP_EVENT_ID = loop_ping_flag ? EVENT_ID0 : EVENT_ID1;
+
+            // 让分块的id按照zN的方式排列 -- 在L1BaseBlock之后再次进行分块
+            int64_t batch_idx = 0;
+            int64_t m_idx, n_idx;
+            
+            constexpr int64_t N_COL = 16;
+            int64_t in_batch_idx = loop_idx % (m_loop * n_loop);
+            int64_t tile_block_loop = (n_loop + N_COL - 1) / N_COL; //行方向z的个数
+            int64_t tile_block_idx = in_batch_idx / (N_COL * m_loop); //在行方向第几个z
+            int64_t in_tile_block_idx = in_batch_idx % (N_COL * m_loop); //在行方向第几个z中的id
+            int64_t n_col = N_COL; //最后一个z的实际宽度
+            if(tile_block_idx == tile_block_loop - 1) {
+                n_col = n_loop - N_COL * tile_block_idx;
+            }
+            m_idx = in_tile_block_idx / n_col;
+            n_idx = tile_block_idx * N_COL + in_tile_block_idx % n_col;
+            
+            // 获取GM上的偏移
+            // GetOffset(loop_idx); 
+
+            // mmadParams.m = MLen;
+            // mmadParams.n = NLen;
+            // mmadParams.cmatrixInitVal = true;
+            
+            int64_t offset_a, offset_b;
+            int64_t offset_c = m_idx * M0 + n_idx * N0 * ldc;
+
+            int64_t m_actual = (m_idx == (m_loop - 1)) ? (M - m_idx * M0) : M0;
+            int64_t n_actual = (n_idx == (n_loop - 1)) ? (N - n_idx * N0) : N0;
+            int64_t m_round = m_actual;
+            int64_t n_round = n_actual;
+
+            int64_t mn_max = m_round > n_round ? m_round : n_round;
+            int64_t L0AB_K0 = L0AB_PINGPONG_BUFFER_LEN / mn_max / 16 * 16;
+
+            // 每一个核上进行K轴切分
+            for (int k_idx = 0; k_idx < k_loop; k_idx++){
+
+                offset_a = m_idx * M0 * K0 + k_idx * K0 * lda;
+                offset_b = k_idx * K0 * N0  + n_idx * N0 * ldb;
+
+                int64_t k_actual = (k_idx == (k_loop - 1)) ? (K - k_idx * K0) : K0;
+                int64_t k_round = k_actual;
+                int64_t L0AB_k_loop = (k_actual + L0AB_K0 - 1) / L0AB_K0;
+
+                auto L1_buf_a = k_loop_ping_flag ? L1_base_a : L1_base_a + L1_PINGPONG_BUFFER_LEN;
+                auto L1_buf_b = k_loop_ping_flag ? L1_base_b : L1_base_b + L1_PINGPONG_BUFFER_LEN;
+                auto K_LOOP_EVENT_ID = k_loop_ping_flag ? EVENT_ID0 : EVENT_ID1;
+
+                // load A from GM to L1 [MLen, KL1Len]
+                // ND2NZ
+                WaitFlagImpl(HardEvent::MTE1_MTE2, K_LOOP_EVENT_ID);
+                ascblas_matrix_gm2cbuf_ND2nN(L1_buf_a, gm_A + offset_a, M0, K0, m_actual, k_actual, M0);
+                SetFlagImpl<HardEvent::MTE2_MTE1>(K_LOOP_EVENT_ID);
+                
+                // load B from GM to L1 [KL1Len, NLen]
+                WaitFlagImpl(HardEvent::MTE1_MTE2, K_LOOP_EVENT_ID + 2);
+                ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + offset_b, K0, N0, k_actual, n_actual, K0);
+                // ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + offset_b, BaseK, BaseN, KL1Len, NLen, BaseK);
+                // CopyND2NZ(L1_tensor_b[L1_buf_b], bGM[offset_b], KL1Len, NLen, N, 0, 0);
+                SetFlagImpl<HardEvent::MTE2_MTE1>(K_LOOP_EVENT_ID + 2);
+
+                for (int L0AB_k_idx = 0; L0AB_k_idx < L0AB_k_loop; L0AB_k_idx++){
+
+                    int64_t L0AB_k_round = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : k_round - L0AB_k_idx * L0AB_K0;
+                    int64_t L0AB_k_actual = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : k_actual - L0AB_k_idx * L0AB_K0;
+                    // KL0Blocks = L0AB_k_round / 16; 
+
+                    auto mte1_mad_ping_flag = 1 - L0AB_k_idx % 2;
+                    auto mte1_mad_event_id = mte1_mad_ping_flag ? EVENT_ID0 : EVENT_ID1;
+                    auto L0A_buf = L0A_base + (L0AB_k_idx % 2) * L0AB_PINGPONG_BUFFER_LEN;
+                    auto L0B_buf = L0B_base + (L0AB_k_idx % 2) * L0AB_PINGPONG_BUFFER_LEN;
+
+                    // *** load matrix A from L1 to L0A [MLen, L0AB_k_round]
+                    if (L0AB_k_idx == 0) {
+                        WaitFlagImpl(HardEvent::MTE2_MTE1, K_LOOP_EVENT_ID);
+                    }
+                    WaitFlagImpl(HardEvent::M_MTE1, mte1_mad_event_id);
+                    // load data
+                    auto L1_src_a = L1_buf_a + L0AB_k_idx * L0AB_K0 * M0;
+                    for (int i = 0; i < m_round / CUBE_M0; i++) {
+                        load_cbuf_to_cb(
+                            L0B_buf + i * CUBE_MATRIX_SIZE,
+                            L1_src_a + i * CUBE_MATRIX_SIZE,
+                            0,
+                            L0AB_k_round / (CUBE_K0),
+                            M0 / CUBE_M0,
+                            m_round / CUBE_M0 - 1,
+                            0,
+                            true,
+                            inc
+                        );
+                    }
+                    if (L0AB_k_idx == L0AB_k_loop - 1) { // L1上的数据已经读取完毕，可以进行下一次 GM -> L1 了
+                        SetFlagImpl<HardEvent::MTE1_MTE2>(K_LOOP_EVENT_ID);
+                    }
+
+                    // *** load matrix B from L1 to L0B
+                    if (L0AB_k_idx == 0) {
+                        WaitFlagImpl(HardEvent::MTE2_MTE1, K_LOOP_EVENT_ID + 2);
+                    }
+                    // load data -- Nz to Zn
+                    auto L1_src_b = L1_buf_b + L0AB_k_idx * L0AB_K0 * N0;; // 当CUBE计算结束，才能拷贝到L0AB上
+                    for (int i = 0; i < n_round / CUBE_N0; i++) {
+                        load_cbuf_to_ca(
+                            L0A_buf + i * L0AB_k_round * CUBE_N0,
+                            L1_src_b + i * CUBE_MATRIX_SIZE,
+                            0,
+                            L0AB_k_round / CUBE_K0,
+                            N0 / CUBE_N0,
+                            0,
+                            0,
+                            false,
+                            inc
+                        );
+                    }
+                    if (L0AB_k_idx == L0AB_k_loop - 1) { // L1上的数据已经读取完毕，可以进行下一次 GM -> L1 了
+                        SetFlagImpl<HardEvent::MTE1_MTE2>(K_LOOP_EVENT_ID + 2);
+                    }
+
+                    SetFlagImpl<HardEvent::MTE1_M>(mte1_mad_event_id);
+                    WaitFlagImpl(HardEvent::MTE1_M, mte1_mad_event_id);
+
+                    bool init_c = (k_idx == 0 && L0AB_k_idx == 0); // 第一次循环直接赋值即可
+                    if (init_c) { // 同步L0C的写入和CUBE的计算
+                        WaitFlagImpl(HardEvent::FIX_M, LOOP_EVENT_ID);
+                    }
+                    // compute
+                    mad(L0C_buf,
+                        L0A_buf,
+                        L0B_buf,
+                        n_round,
+                        L0AB_k_actual,
+                        m_round,
+                        0,
+                        1,
+                        0,
+                        init_c
+                    );
+                    pipe_barrier(PIPE_M);
+                    // mmadParams.cmatrixInitVal = false;
+                    SetFlagImpl<HardEvent::M_MTE1>(mte1_mad_event_id);
+                }
+                k_loop_ping_flag = 1 - k_loop_ping_flag; // 更换标记做双缓存
+            }
+            SetFlagImpl<HardEvent::M_FIX>(LOOP_EVENT_ID);
+            WaitFlagImpl(HardEvent::M_FIX, LOOP_EVENT_ID);
+
+            // load to GM from L0C -- not done
+            copy_matrix_cc_to_gm(
+                gm_C + offset_c,
+                L0C_buf,
+                0,
+                m_actual,
+                n_actual,  
+                ldc,   
+                n_round,
+                0,
+                F322F16,
+                0,
+                false,
+                true
+            );
+
+            loop_ping_flag = 1 - loop_ping_flag; // 更换标记做双缓存
+
+            SetFlagImpl<HardEvent::FIX_M>(LOOP_EVENT_ID);
         }
-        CopyOut();
+
+        WaitFlagImpl(HardEvent::M_MTE1, EVENT_ID0);
+        WaitFlagImpl(HardEvent::M_MTE1, EVENT_ID1);
+
+        WaitFlagImpl(HardEvent::MTE1_MTE2, EVENT_ID0);
+        WaitFlagImpl(HardEvent::MTE1_MTE2, EVENT_ID1);
+        WaitFlagImpl(HardEvent::MTE1_MTE2, EVENT_ID2);
+        WaitFlagImpl(HardEvent::MTE1_MTE2, EVENT_ID3);
+
+        WaitFlagImpl(HardEvent::FIX_M, EVENT_ID0);
+        WaitFlagImpl(HardEvent::FIX_M, EVENT_ID1);
     }
 
 private:
@@ -179,157 +365,28 @@ private:
             dstOffset += 16 * height;
         }
     }
-    /*
-    * @brief: 获取输入A、B矩阵的L1 Buffer，从GM搬运数据到L1 Buffer上，
-    * 其分配的内存空间为当前的TilingL1K*BaseK*(BaseM+BaseN)*Type
-    * 转换前为ND格式，转换后为Nz格式
-    * 实际搬运的矩阵大小为A[MLen, KL1Len], B[KL1Len, NLen]
-    * @param: L2KIdx 当前核的K索引，为TilingL1K的倍数
-    */
-    __aicore__ inline void CopyIn(int L2KIdx, const int DouBuf){
-        LocalTensor<half> a1Local = inQueueA1.AllocTensor<half>();
-        LocalTensor<half> b1Local = inQueueB1.AllocTensor<half>();
-
-        int MDouBufGMOffset = L2KIdx * BaseK;
-        int MDouBufL1Offset = DouBuf * KL1DouBuf[0];
-
-        int NDouBufGMOffset = L2KIdx * BaseK * N;
-        int NDouBufL1Offset = DouBuf * KL1DouBuf[0] * N;
-
-        int ML1DstOffset = 0;
-        int NL1DstOffset = 0;
-
-        // int ML1DstOffset = DouBuf * aL1Size / 2;
-        // int NL1DstOffset = DouBuf * bL1Size / 2;
-
-        CopyND2NZ(a1Local, aGM[MOffset], MLen, KL1DouBuf[DouBuf], K, MDouBufGMOffset + MDouBufL1Offset, ML1DstOffset); 
-        CopyND2NZ(b1Local, bGM[NOffset], KL1DouBuf[DouBuf], NLen, N, NDouBufGMOffset + NDouBufL1Offset, NL1DstOffset);
-
-        inQueueA1.EnQue(a1Local);
-        inQueueB1.EnQue(b1Local);
-    }
-    /* 
-    * @brief: 将L1Buffer中的A矩阵数据[MLen, KL1Len]搬运到L0A中，实际搬运长度为[MLen, KL0Len]
-    * 搬运前为Nz格式，搬运后为Zz格式
-    * @param: DouBufL0, 从L1搬向L0的block索引
-    */
-    __aicore__ inline void SplitA(LocalTensor<half>& a1Local, const int DouBufL1, const int DouBufL0){
-
-        LocalTensor<half> a2Local = inQueueA2.AllocTensor<half>();
-
-        // int MDouBufL1Offset = DouBufL1 * aL1Size / 2;
-        int MDouBufL1Offset = 0;
-        int srcOffset = MDouBufL1Offset + DouBufL0 * BaseK * MLen;
-        // int dstOffset = DouBufL1 * aL0Size;
-        int dstOffset = 0;
-
-        LoadData2dParams loadDataParams;
-        loadDataParams.repeatTimes = kL0Blocks;
-        loadDataParams.srcStride = mBlocks;
-        loadDataParams.ifTranspose = false;
-
-        // transform nz to zz
-        for (int i = 0; i < mBlocks; ++i) {
-            LoadData(a2Local[dstOffset], a1Local[srcOffset], loadDataParams);
-            srcOffset += 16 * 16;
-            dstOffset += kL0Blocks * 16 * 16;
-        }
-        inQueueA2.EnQue<half>(a2Local);
-
-    }
-    /* 
-    * @brief: 将L1Buffer中的B矩阵数据[KL1Len, NLen]搬运到L0A中，实际搬运长度为[KL0Len, NLen]
-    * 搬运前为Nz格式，搬运后为Zn格式
-    */
-    __aicore__ inline void SplitB(const LocalTensor<half>& b1Local, const int DouBufL1, const int DouBufL0){
-        
-        LocalTensor<half> b2Local = inQueueB2.AllocTensor<half>();
-
-        // int NDouBufL0Offset = DouBufL1 * bL1Size / 2;
-        int NDouBufL0Offset = 0;
-        int srcOffset = NDouBufL0Offset + DouBufL0 * 16 * BaseK;
-        // int srcOffset = L1SplitIdx * 16 * 16 * kL0Blocks;
-        // int dstOffset = DouBufL1 * bL0Size;
-        int dstOffset = 0;
-
-        // transform Nz to Zn
-        LoadData2dParams loadDataParams;
-        loadDataParams.repeatTimes = nBlocks;
-        loadDataParams.srcStride = KL1DouBufBlocks[DouBufL1];
-        loadDataParams.ifTranspose = true;
-
-        for (int i = 0; i < kL0Blocks; i++){
-            LoadData(b2Local[dstOffset], b1Local[srcOffset], loadDataParams);
-            srcOffset += 16 * 16;
-            dstOffset += nBlocks * 16 * 16;
-        }
-
-        inQueueB2.EnQue<half>(b2Local);
-    }
-    /*
-    @brief: 将L0A、L0B中的数据进行计算，计算结果存放在L0C中，实际计算长度为[MLen, NLen]
-    */
-    __aicore__ inline void Compute(MmadParams& mmadParams, const int DouBufL1, const int DouBufL0)
-    {
-        LocalTensor<half> a2Local = inQueueA2.DeQue<half>();
-        LocalTensor<half> b2Local = inQueueB2.DeQue<half>();
-        LocalTensor<float> c1Local = outQueueCO1.DeQue<float>();
-
-        // int srcOffset = L1SplitIdx * 16 * 16 * mBlocks;
-        int dstOffset = 0;
-
-        // Nz
-        Mmad(c1Local, a2Local, b2Local, mmadParams);
-        PipeBarrier<PIPE_M>();
-        mmadParams.cmatrixInitVal = false;
-
-        outQueueCO1.EnQue<float>(c1Local);
-        inQueueB2.FreeTensor(b2Local);
-        inQueueA2.FreeTensor(a2Local);
-    }
-    /*
-    @brief: 将L0C中的数据搬运到GM中，实际搬运长度为[MLen, NLen]
-    */
-    __aicore__ inline void CopyOut()
-    {
-        LocalTensor<float> c1Local = outQueueCO1.DeQue<float>();
-        FixpipeParamsV220 fixpipeParams;
-        fixpipeParams.nSize = NLen; // L0C中的N大小
-        fixpipeParams.mSize = MLen; // L0C中的M大小
-        fixpipeParams.srcStride = MLen; // 搬运MLen次，一次搬运NLen大小
-        fixpipeParams.dstStride = N; // 每次搬运时的目标地址的偏移
-        fixpipeParams.ndNum = 1;
-        Fixpipe(cGM[ResOffset], c1Local, fixpipeParams);
-
-        outQueueCO1.FreeTensor(c1Local);
-    }
 
 private:
-    TPipe* pipe;
 
-    TQue<QuePosition::A1, 2> inQueueA1;
-    TQue<QuePosition::A2, 2> inQueueA2;
-    TQue<QuePosition::B1, 2> inQueueB1;
-    TQue<QuePosition::B2, 2> inQueueB2;
-    // dst queue
-    TQue<QuePosition::CO1, 2> outQueueCO1;
-    TQue<QuePosition::CO2, 2> outQueueCO2;
+    // GlobalTensor<half> aGM, bGM;
+    // GlobalTensor<half> cGM;
 
-    GlobalTensor<half> aGM, bGM;
-    GlobalTensor<float> cGM;
+    __gm__ __fp16 * __restrict__ gm_A = nullptr;
+    __gm__ __fp16 * __restrict__ gm_B = nullptr;
+    __gm__ __fp16 * __restrict__ gm_C = nullptr;
 
-    uint16_t M, N, K;
-    uint16_t BaseM, BaseN, BaseK;
-    uint16_t coreM, coreN;
-    uint16_t BlockNumM, BlockNumN, BlockNumK;
-    uint16_t TilingL1K;
-    uint32_t MLen, NLen, KL1Len, KL0Len;
-    uint32_t MOffset, NOffset, ResOffset;
+    int64_t M, N, K;
+    int64_t BaseM, BaseN, BaseK;
+    int64_t coreM, coreN;
+    int64_t BlockNumM, BlockNumN, BlockNumK;
+    int64_t TilingL1K;
+    int64_t MLen, NLen, KL1Len, KL0Len;
+    int64_t MOffset, NOffset, ResOffset;
     // Attr attr;
 
-    uint32_t aL1Size, bL1Size, aL0Size, bL0Size, cSize;
-    uint16_t mBlocks, nBlocks, kBlocks, kL1Blocks, kL0Blocks;
-    uint16_t TotalResBlocks;
+    int64_t aL1Size, bL1Size, aL0Size, bL0Size, cSize;
+    int64_t mBlocks, nBlocks, kBlocks, KL1Blocks, KL0Blocks;
+    int64_t TotalResBlocks;
     int64_t coreidx;
 
     // uint32_t KDouBuf1, KDouBuf2;
@@ -339,7 +396,9 @@ private:
 };
 
 // 直接传结构体会读不出来，可能需要片上构建
-extern "C" __global__ __aicore__ void matmul_custom_m128_n256_k128(GM_ADDR A, GM_ADDR B, GM_ADDR C, 
+extern "C" __global__ __aicore__ void matmul_custom_m128_n256_k128(GM_ADDR A, 
+                                                                   GM_ADDR B, 
+                                                                   GM_ADDR C, 
                                                                    uint16_t M, uint16_t N, uint16_t K, 
                                                                    uint16_t BaseM, uint16_t BaseN, uint16_t BaseK,
                                                                    uint16_t BlockNumM, uint16_t BlockNumN, uint16_t BlockNumK,
@@ -347,27 +406,22 @@ extern "C" __global__ __aicore__ void matmul_custom_m128_n256_k128(GM_ADDR A, GM
                                                                    uint16_t TotalResBlocks)
 {
     KernelMatmul op(M, N, K);
-    TPipe pipe;
+    // TPipe pipe;
     op.InitAttr(BaseM, BaseN, BaseK,
                 BlockNumM, BlockNumN, BlockNumK,
                 TilingL1K,
-                TotalResBlocks,
-                &pipe);
+                TotalResBlocks);
     op.Init(A, B, C);
-    
-    // div core, each core processes (TotalResBlocks / CoreNum, or (TotalResBlocks + CoreNum - 1) / CoreNum)
-    // Base Blocks
-    auto CoreIdx = GetBlockIdx();
-    for (; CoreIdx < TotalResBlocks; CoreIdx += 20)
-    {
-        op.GetOffset(CoreIdx);
-        op.Process();
-    }
+    op.Process();
 }
 
 #ifndef __CCE_KT_TEST__40
 // call of kernel function
-void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, uint8_t* A, uint8_t* B, uint8_t* C, uint16_t M, uint16_t N, uint16_t K)
+void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, 
+                    uint8_t* A, 
+                    uint8_t* B, 
+                    uint8_t* C,
+                     uint16_t M, uint16_t N, uint16_t K)
 {
 
     // best: mem-comp 
@@ -375,42 +429,23 @@ void matmul_custom_do(uint32_t blockDim, void* l2ctrl, void* stream, uint8_t* A,
     // 128, 256, K -- 85.3
     // 192, 160, K -- 87.3
     uint16_t BaseM = 128;
-    uint16_t BaseN = 256;
-    uint16_t BaseK = 64;
-    // Attr attr_(BaseM, BaseN, BaseK);
-
-    // uint16_t block = 16;
-    // uint16_t height = 8;
-    // uint16_t width = 16;
+    uint16_t BaseN = 128;
+    uint16_t BaseK = 256;
 
     uint32_t L1BufferSize = 1 * 512 * 1024;
     uint32_t L0ABBufferSize = 64 * 1024;
     uint32_t L0CBufferSize = 64 * 1024;
     
-    // assert(uint32_t(BaseM) * uint32_t(BaseK) * 2 < L0ABBufferSize);
-    // assert(uint32_t(BaseN) * uint32_t(BaseK) * 2 < L0ABBufferSize);
-    // assert(uint32_t(BaseN) * uint32_t(BaseM) * 4 < L0CBufferSize);
-
     uint16_t BlockNumM = (M + BaseM - 1) / BaseM;
     uint16_t BlockNumN = (N + BaseN - 1) / BaseN;
     uint16_t BlockNumK = (K + BaseK - 1) / BaseK;
 
-    // assert(false);
-
-    // assert(BlockNumM > 0);
-    // assert(BlockNumN > 0);
-    // assert(BlockNumK > 0);
-
     uint16_t TotalResBlocks = BlockNumM * BlockNumN;
     if (blockDim > TotalResBlocks) { blockDim = uint32_t(TotalResBlocks); }
-    // else {CHECK_ACL(false);}
 
     OpType optype = OpType::fp16; 
 
-    // uint16_t TilingL1K = L1BufferSize / (BaseM * BaseK + BaseN * BaseK) / optype;
-    // TilingL1K -= TilingL1K % 2;
-    // TilingL1K = TilingL1K > 0 ? TilingL1K : 1;
-    uint16_t TilingL1K = 4;
+    uint16_t TilingL1K = 1;
 
     matmul_custom_m128_n256_k128<<<blockDim, l2ctrl, stream>>>(A, B, C, 
                                                                M, N, K, 

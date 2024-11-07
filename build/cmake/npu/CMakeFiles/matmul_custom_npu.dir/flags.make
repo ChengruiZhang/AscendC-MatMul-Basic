@@ -6,5 +6,5 @@ CCE_DEFINES =
 
 CCE_INCLUDES = 
 
-CCE_FLAGS = -O2 -std=c++17
+CCE_FLAGS = -O0 -g -std=c++17
 

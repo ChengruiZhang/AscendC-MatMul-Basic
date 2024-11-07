@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/matmul_custom_npu"
-  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL/matmul_custom_npu.pdb"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/matmul_custom_npu"
+  "/home/westhpc/RayCode/samples/cplusplus/level1_single_api/4_op_dev/6_ascendc_custom_op/kernel_invocation/MatMul_ALL_L2_DBALL_HighPerf_3/matmul_custom_npu.pdb"
   "CMakeFiles/matmul_custom_npu.dir/__/__/main.cpp.o"
   "CMakeFiles/matmul_custom_npu.dir/__/__/matmul_custom.cpp.o"
 )

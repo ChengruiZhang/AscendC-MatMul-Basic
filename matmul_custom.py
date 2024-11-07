@@ -10,14 +10,24 @@ def gen_golden_data(M, N, K):
     x1_gm_type = torch.float16
     x2_gm_type = torch.float16
 
-    
-    x1_gm_0 = torch.randint(1, 4, [M, K], dtype=torch.float16, device="npu") / 10
-    x1_gm = x1_gm_0.to(x1_gm_type)
-    x1_gm_test = x1_gm_0.to(torch.float32)
-    x2_gm_0 = torch.randint(1, 4, [K, N], dtype=torch.float16, device="npu") / 10
-    x2_gm = x2_gm_0.to(x2_gm_type)
-    x2_gm_test = x2_gm_0.to(torch.float32)
-    golden = torch.matmul(x1_gm.to(torch.float16), x2_gm.to(torch.float16)).to(torch.float16)
+    debug = True
+    if(debug):
+        x1_gm_0 = torch.arange(M).view(M, 1).repeat(1, K).to("npu") / 10
+        x2_gm_0 = torch.arange(K).view(K, 1).repeat(1, N).to("npu") / 10
+    else:
+        x1_gm_0 = torch.randint(1, 4, [M, K], dtype=torch.float16, device="npu") / 10
+        x2_gm_0 = torch.randint(1, 4, [K, N], dtype=torch.float16, device="npu") / 10
+
+    transpose = False
+    if(transpose):
+        x1_gm = x1_gm_0.to(x1_gm_type).transpose(0, 1)
+        x2_gm = x2_gm_0.to(x2_gm_type).transpose(0, 1)
+        golden = torch.matmul(x2_gm, x1_gm).to(torch.float16)
+    else:
+        x1_gm = x1_gm_0.to(x1_gm_type)
+        x2_gm = x2_gm_0.to(x2_gm_type)
+        golden = torch.matmul(x1_gm, x2_gm).to(torch.float16)
+
 
     print("compute done")
 
