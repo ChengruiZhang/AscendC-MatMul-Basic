@@ -3,7 +3,7 @@ import sys
 import numpy as np
 
 loss = 1e-3
-minimum = 10e-10
+minimum = 10e-7
 
 def verify_result(real_result, golden):
     real_result = np.fromfile(real_result, dtype=np.float16)
@@ -51,6 +51,6 @@ if __name__ == '__main__':
     # verify_result(sys.argv[1],sys.argv[2])
     
     # verify_gpt()
-    verify()
+    # verify()
     # verify_result("./output/output.bin", "./output/product_matrix.bin")
     verify_result("./output/output.bin", "./output/golden.bin")

@@ -128,7 +128,7 @@ public:
 
         auto M0 = BaseM; auto N0 = BaseN; auto K0 = BaseK;
 
-        int64_t lda = M; int64_t ldb = K; int64_t ldc = M;
+        int64_t lda = K; int64_t ldb = N; int64_t ldc = N;
 
         auto L1_base_a = reinterpret_cast<__cbuf__ __fp16 *>((uintptr_t)0);            // 128 KB 128*256*2/1024=64 double buffer
         auto L1_base_b = reinterpret_cast<__cbuf__ __fp16 *>((uintptr_t)(128 * 1024)); // 128 KB 256*128*2/1024=64 double buffer
@@ -192,8 +192,8 @@ public:
             // mmadParams.n = NLen;
             // mmadParams.cmatrixInitVal = true;
             
-            int64_t offset_a, offset_b;
-            int64_t offset_c = m_idx * M0 + n_idx * N0 * ldc;
+            int64_t gm_offset_a, gm_offset_b;
+            int64_t gm_offset_c = m_idx * M0 * ldc + n_idx * N0; // ND格式的顺序
 
             int64_t m_actual = (m_idx == (m_loop - 1)) ? (M - m_idx * M0) : M0;
             int64_t n_actual = (n_idx == (n_loop - 1)) ? (N - n_idx * N0) : N0;
@@ -206,12 +206,12 @@ public:
             // 每一个核上进行K轴切分
             for (int k_idx = 0; k_idx < k_loop; k_idx++){
 
-                offset_a = m_idx * M0 * K0 + k_idx * K0 * lda;
-                offset_b = k_idx * K0 * N0  + n_idx * N0 * ldb;
+                gm_offset_a = m_idx * M0 * lda + k_idx * K0; // [M, K]
+                gm_offset_b = k_idx * K0 * ldb + n_idx * N0; // [K, N]
 
-                int64_t k_actual = (k_idx == (k_loop - 1)) ? (K - k_idx * K0) : K0;
-                int64_t k_round = k_actual;
-                int64_t L0AB_k_loop = (k_actual + L0AB_K0 - 1) / L0AB_K0;
+                int64_t L1_k_actual = (k_idx == (k_loop - 1)) ? (K - k_idx * K0) : K0;
+                int64_t L1_k_round = L1_k_actual;
+                int64_t L0AB_k_loop = (L1_k_actual + L0AB_K0 - 1) / L0AB_K0;
 
                 auto L1_buf_a = k_loop_ping_flag ? L1_base_a : L1_base_a + L1_PINGPONG_BUFFER_LEN;
                 auto L1_buf_b = k_loop_ping_flag ? L1_base_b : L1_base_b + L1_PINGPONG_BUFFER_LEN;
@@ -220,20 +220,20 @@ public:
                 // load A from GM to L1 [MLen, KL1Len]
                 // ND2NZ
                 WaitFlagImpl(HardEvent::MTE1_MTE2, K_LOOP_EVENT_ID);
-                ascblas_matrix_gm2cbuf_ND2nN(L1_buf_a, gm_A + offset_a, M0, K0, m_actual, k_actual, M0);
+                ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_a, gm_A + gm_offset_a, m_round, L1_k_round, m_actual, L1_k_actual, K);
                 SetFlagImpl<HardEvent::MTE2_MTE1>(K_LOOP_EVENT_ID);
                 
                 // load B from GM to L1 [KL1Len, NLen]
                 WaitFlagImpl(HardEvent::MTE1_MTE2, K_LOOP_EVENT_ID + 2);
-                ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + offset_b, K0, N0, k_actual, n_actual, K0);
-                // ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + offset_b, BaseK, BaseN, KL1Len, NLen, BaseK);
-                // CopyND2NZ(L1_tensor_b[L1_buf_b], bGM[offset_b], KL1Len, NLen, N, 0, 0);
+                ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + gm_offset_b, L1_k_round, n_round, L1_k_actual, n_actual, N);
+                // ascblas_matrix_gm2cbuf_ND2nZ(L1_buf_b, gm_B + gm_offset_b, BaseK, BaseN, KL1Len, NLen, BaseK);
+                // CopyND2NZ(L1_tensor_b[L1_buf_b], bGM[gm_offset_b], KL1Len, NLen, N, 0, 0);
                 SetFlagImpl<HardEvent::MTE2_MTE1>(K_LOOP_EVENT_ID + 2);
 
                 for (int L0AB_k_idx = 0; L0AB_k_idx < L0AB_k_loop; L0AB_k_idx++){
 
-                    int64_t L0AB_k_round = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : k_round - L0AB_k_idx * L0AB_K0;
-                    int64_t L0AB_k_actual = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : k_actual - L0AB_k_idx * L0AB_K0;
+                    int64_t L0AB_k_round = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : L1_k_round - L0AB_k_idx * L0AB_K0;
+                    int64_t L0AB_k_actual = (L0AB_k_idx < L0AB_k_loop - 1) ? L0AB_K0 : L1_k_actual - L0AB_k_idx * L0AB_K0;
                     // KL0Blocks = L0AB_k_round / 16; 
 
                     auto mte1_mad_ping_flag = 1 - L0AB_k_idx % 2;
@@ -246,19 +246,22 @@ public:
                         WaitFlagImpl(HardEvent::MTE2_MTE1, K_LOOP_EVENT_ID);
                     }
                     WaitFlagImpl(HardEvent::M_MTE1, mte1_mad_event_id);
-                    // load data
-                    auto L1_src_a = L1_buf_a + L0AB_k_idx * L0AB_K0 * M0;
+                    // load data -- Nz -> Zz
+                    auto L1_src_a = L1_buf_a + L0AB_k_idx * L0AB_K0 * m_round;
                     for (int i = 0; i < m_round / CUBE_M0; i++) {
-                        load_cbuf_to_cb(
-                            L0B_buf + i * CUBE_MATRIX_SIZE,
-                            L1_src_a + i * CUBE_MATRIX_SIZE,
-                            0,
-                            L0AB_k_round / (CUBE_K0),
-                            M0 / CUBE_M0,
-                            m_round / CUBE_M0 - 1,
-                            0,
-                            true,
-                            inc
+                        // /usr/local/Ascend/ascend-toolkit/8.0.RC3.alpha003/aarch64-linux/ascendc/include/basic_api/impl/dav_c220/kernel_operator_cube_others_impl.h:347
+                        // https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/80RC3alpha003/apiref/opdevgapi/atlasascendc_api_07_0231.html
+                        // 其中的LoadData2DParams
+                        load_cbuf_to_ca(
+                            L0A_buf + i * L0AB_k_round * CUBE_M0, // dst
+                            L1_src_a + i * CUBE_MATRIX_SIZE, //src 
+                            0, // baseIdx
+                            L0AB_k_round / (CUBE_K0), // repeat
+                            m_round / CUBE_M0, // srcStride
+                            0, // dstStride
+                            0, // sid 
+                            false, // transpose
+                            inc // 预留参数，默认设置为0即可
                         );
                     }
                     if (L0AB_k_idx == L0AB_k_loop - 1) { // L1上的数据已经读取完毕，可以进行下一次 GM -> L1 了
@@ -266,22 +269,23 @@ public:
                     }
 
                     // *** load matrix B from L1 to L0B
+                    // Nz --> Zn
                     if (L0AB_k_idx == 0) {
                         WaitFlagImpl(HardEvent::MTE2_MTE1, K_LOOP_EVENT_ID + 2);
                     }
                     // load data -- Nz to Zn
-                    auto L1_src_b = L1_buf_b + L0AB_k_idx * L0AB_K0 * N0;; // 当CUBE计算结束，才能拷贝到L0AB上
-                    for (int i = 0; i < n_round / CUBE_N0; i++) {
-                        load_cbuf_to_ca(
-                            L0A_buf + i * L0AB_k_round * CUBE_N0,
-                            L1_src_b + i * CUBE_MATRIX_SIZE,
-                            0,
-                            L0AB_k_round / CUBE_K0,
-                            N0 / CUBE_N0,
-                            0,
-                            0,
-                            false,
-                            inc
+                    auto L1_src_b = L1_buf_b + L0AB_k_idx * L0AB_K0 * CUBE_N0;; // 当CUBE计算结束，才能拷贝到L0AB上
+                    for (int i = 0; i < L0AB_k_round / CUBE_N0; i++) {
+                        load_cbuf_to_cb(
+                            L0B_buf + i * n_round * CUBE_K0, // dst
+                            L1_src_b + i * CUBE_MATRIX_SIZE, //src 
+                            0, // baseIdx
+                            n_round / CUBE_N0, // repeat
+                            L1_k_round / CUBE_K0, // srcStride -- 完整的L1上的K的长度
+                            0, // dstStride
+                            0, // sid 
+                            true, // transpose
+                            inc // 预留参数，默认设置为0即可
                         );
                     }
                     if (L0AB_k_idx == L0AB_k_loop - 1) { // L1上的数据已经读取完毕，可以进行下一次 GM -> L1 了
@@ -299,11 +303,11 @@ public:
                     mad(L0C_buf,
                         L0A_buf,
                         L0B_buf,
-                        n_round,
-                        L0AB_k_actual,
                         m_round,
+                        L0AB_k_round,
+                        n_round,
                         0,
-                        1,
+                        1, // kDirectionAlign
                         0,
                         init_c
                     );
@@ -317,19 +321,21 @@ public:
             WaitFlagImpl(HardEvent::M_FIX, LOOP_EVENT_ID);
 
             // load to GM from L0C -- not done
+            // /usr/local/Ascend/ascend-toolkit/8.0.RC3.alpha003/aarch64-linux/tikcpp/tikcfw/impl/dav_c220/kernel_operator_cube_others_impl.h:175
+            // 
             copy_matrix_cc_to_gm(
-                gm_C + offset_c,
+                gm_C + gm_offset_c,
                 L0C_buf,
-                0,
-                m_actual,
-                n_actual,  
-                ldc,   
-                n_round,
-                0,
-                F322F16,
-                0,
-                false,
-                true
+                0,        // sid
+                n_actual, // NSize
+                m_actual, // MSize
+                ldc,      // dstStride_dst_D -- 目标矩阵的相邻行之间间隔的元素个数
+                m_round,  // srcStride
+                0,        // UnitFlagMode
+                F322F16,  // QuantPRE
+                0,        // ReLUPRE
+                false,    // channelSplit
+                true      // NZ2ND_EN
             );
 
             loop_ping_flag = 1 - loop_ping_flag; // 更换标记做双缓存

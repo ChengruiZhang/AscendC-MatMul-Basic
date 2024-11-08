@@ -85,7 +85,7 @@ int32_t main(int32_t argc, char* argv[])
     uint8_t *param2Device;
     CHECK_ACL(aclrtMallocHost((void**)(&param2Host), param2FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param2Device, param2FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
-    ReadFile("./input/x2_gm.bin", param2FileSize, param2Host, param2FileSize);
+    // ReadFile("./input/x2_gm.bin", param2FileSize, param2Host, param2FileSize);
     if (argc > 9) {
         ReadFile(argv[9], param2FileSize, param2Host, param2FileSize);
     } else {
@@ -98,6 +98,8 @@ int32_t main(int32_t argc, char* argv[])
     uint8_t *param3Device;
     CHECK_ACL(aclrtMallocHost((void**)(&param3Host), param3FileSize));
     CHECK_ACL(aclrtMalloc((void**)&param3Device, param3FileSize, ACL_MEM_MALLOC_HUGE_FIRST));
+    // ReadFile("./C_init.bin", param3FileSize, param3Host, param3FileSize);
+    // CHECK_ACL(aclrtMemcpy(param2Device, param2FileSize, param2Host, param2FileSize, ACL_MEMCPY_HOST_TO_DEVICE));
 
     double warm_up = 5;
     for(int i = 0; i < warm_up; i++){
