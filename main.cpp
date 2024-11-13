@@ -133,6 +133,10 @@ int32_t main(int32_t argc, char* argv[])
         WriteFile("./output/output.bin", param3Host, param3FileSize);
     }
     // WriteFile("./output/output.bin", param3Host, param3FileSize);
+    CHECK_ACL(aclrtFree(param1Device));
+    CHECK_ACL(aclrtFreeHost(param1Host));
+    CHECK_ACL(aclrtFree(param2Device));
+    CHECK_ACL(aclrtFreeHost(param2Host));
     CHECK_ACL(aclrtFree(param3Device));
     CHECK_ACL(aclrtFreeHost(param3Host));
 

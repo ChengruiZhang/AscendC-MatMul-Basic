@@ -1,0 +1,2 @@
+Op Name,Op Type,Task Duration(us),Block Dim,Mix Block Dim,Device Id,Pid,Current Freq,Rated Freq,
+matmul_custom_m128_n256_k128,cube,32.460648,20,N/A,0,64145,800,1800,
