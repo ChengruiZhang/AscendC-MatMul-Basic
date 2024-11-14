@@ -9,6 +9,179 @@ constexpr int64_t CUBE_K0 = 32 / sizeof(__fp16);
 constexpr int64_t CUBE_MATRIX_SIZE = CUBE_K0 * CUBE_N0;                  // 16 * 16
 constexpr int64_t UINT16_STRIDE_LIMIT = 65536;
 
+
+/**
+ * @brief AIC函数：将列优先的nD矩阵转换为nZ格式
+ * @param [in] __cbuf__ __fp16 *dst：L1 目的地址
+ * @param [in] __gm__ __fp16 *src: GM 源地址
+ * @param [in] int64_t CBUF_M0：在L1中矩阵的行数（至少要32B对齐）
+ * @param [in] int64_t CBUF_N0：在L1中矩阵的列数（至少要32B对齐）
+ * @param [in] int64_t LenRow：在GM中矩阵的行数（不需要对齐）
+ * @param [in] int64_t LenCol：在GM中矩阵的列数（不需要对齐）
+ * @param [in] int64_t stride：在GM中矩阵中两列之间的距离（不需要对齐）
+ */
+__aicore__ __inline__ void ascblas_matrix_gm2cbuf_ND2nZ(
+    __cbuf__ __fp16 *dst, 
+    __gm__ __fp16 * src,
+    int64_t CBUF_M0,
+    int64_t CBUF_N0, 
+    int64_t LenRow, 
+    int64_t LenCol, 
+    size_t stride
+)
+{
+    // 一个ND处理CUBE_M0行数据
+    int64_t srcNdStride = CUBE_M0 * stride;
+    int64_t srcNStride = stride;
+
+    if(srcNdStride < UINT16_STRIDE_LIMIT) {
+        int nValue = CUBE_M0;
+        int ndNum = LenRow / CUBE_M0; 
+        int remains = LenRow % CUBE_M0;
+        if(ndNum > 0) {
+            // 该函数的接口参考这个网址：https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/80RC3alpha003/apiref/opdevgapi/atlasascendc_api_07_0108.html
+            // 其中的 Nd2NzParams
+            copy_gm_to_cbuf_multi_nd2nz_b16(
+                dst,
+                src,
+                static_cast<uint8_t>(0),            // sid
+                static_cast<uint16_t>(ndNum),       // ndNum
+                static_cast<uint16_t>(nValue),          // nValue
+                static_cast<uint16_t>(LenCol),   // dValue
+                static_cast<uint16_t>(srcNdStride), // srcNdMatrixStride
+                static_cast<uint16_t>(srcNStride),  // srcDValue
+                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+                static_cast<uint16_t>(1),           // dstNzNStride
+                static_cast<uint16_t>(CUBE_N0 * nValue)      // dstNzMatrixStride
+            );
+        }
+        if(remains > 0){
+            copy_gm_to_cbuf_multi_nd2nz_b16(
+                dst + ndNum * CUBE_N0 * nValue,
+                src + ndNum * nValue * stride,
+                static_cast<uint8_t>(0),            // sid
+                static_cast<uint16_t>(1),           // ndNum
+                static_cast<uint16_t>(remains),     // nValue
+                static_cast<uint16_t>(LenCol),   // dValue
+                static_cast<uint16_t>(0),           // srcNdMatrixStride
+                static_cast<uint16_t>(srcNStride),  // srcDValue
+                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+                static_cast<uint16_t>(1),           // dstNzNStride
+                static_cast<uint16_t>(0)           // dstNzMatrixStride
+            );
+        }
+    } else{
+        copy_gm_to_cbuf_multi_nd2nz_b16(
+            dst,
+            src,
+            static_cast<uint8_t>(0),            // sid
+            static_cast<uint16_t>(1),           // ndNum
+            static_cast<uint16_t>(LenRow),           // nValue
+            static_cast<uint16_t>(LenCol),   // dValue
+            static_cast<uint16_t>(0),           // srcNdMatrixStride
+            static_cast<uint16_t>(stride),           // srcDValue
+            static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+            static_cast<uint16_t>(1),           // dstNzNStride
+            static_cast<uint16_t>(0)           // dstNzMatrixStride
+        );
+    }
+}
+
+    // if(srcNdStride < UINT16_STRIDE_LIMIT) {
+    //     int nValue = CUBE_M0;
+    //     int ndNum = LenRow / CUBE_M0; 
+    //     int remains = LenRow % CUBE_M0;
+    //     if(ndNum > 0) {
+    //         // 该函数的接口参考这个网址：https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/80RC3alpha003/apiref/opdevgapi/atlasascendc_api_07_0108.html
+    //         // 其中的 Nd2NzParams
+    //         copy_gm_to_cbuf_multi_nd2nz_b16(
+    //             dst,
+    //             src,
+    //             static_cast<uint8_t>(0),            // sid
+    //             static_cast<uint16_t>(ndNum),       // ndNum
+    //             static_cast<uint16_t>(nValue),          // nValue
+    //             static_cast<uint16_t>(LenCol),   // dValue
+    //             static_cast<uint16_t>(srcNdStride), // srcNdMatrixStride
+    //             static_cast<uint16_t>(srcNStride),  // srcDValue
+    //             static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+    //             static_cast<uint16_t>(1),           // dstNzNStride
+    //             static_cast<uint16_t>(CUBE_N0 * nValue)      // dstNzMatrixStride
+    //         );
+    //     }
+    //     if(remains > 0){
+    //         copy_gm_to_cbuf_multi_nd2nz_b16(
+    //             dst + ndNum * CUBE_N0 * nValue,
+    //             src + ndNum * nValue * stride,
+    //             static_cast<uint8_t>(0),            // sid
+    //             static_cast<uint16_t>(1),           // ndNum
+    //             static_cast<uint16_t>(remains),     // nValue
+    //             static_cast<uint16_t>(LenCol),   // dValue
+    //             static_cast<uint16_t>(0),           // srcNdMatrixStride
+    //             static_cast<uint16_t>(srcNStride),  // srcDValue
+    //             static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+    //             static_cast<uint16_t>(1),           // dstNzNStride
+    //             static_cast<uint16_t>(0)           // dstNzMatrixStride
+    //         );
+    //     }
+    // } else if (srcNStride < UINT16_STRIDE_LIMIT) {
+    //     int nValue = 1;
+    //     while(nValue * stride < UINT16_STRIDE_LIMIT / 2){
+    //         nValue *= 2;
+    //     }
+    //     int ndNum = LenRow / nValue;
+    //     int remains = LenRow % nValue;
+    //     int srcNdMatrixStride = nValue * stride;
+    //     // for (int i = 0; i < ndNum; i++) {
+    //     if(ndNum > 0) {
+    //         copy_gm_to_cbuf_multi_nd2nz_b16(
+    //             dst,
+    //             src,
+    //             static_cast<uint8_t>(0),            // sid
+    //             static_cast<uint16_t>(ndNum),           // ndNum
+    //             static_cast<uint16_t>(nValue),          // nValue
+    //             static_cast<uint16_t>(LenCol),   // dValue
+    //             static_cast<uint16_t>(srcNdMatrixStride), // srcNdMatrixStride
+    //             static_cast<uint16_t>(srcNStride),  // srcDValue
+    //             static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+    //             static_cast<uint16_t>(1),           // dstNzNStride
+    //             static_cast<uint16_t>(nValue * CUBE_N0)      // dstNzMatrixStride
+    //         );
+    //     }
+    //     if(remains > 0) {
+    //         copy_gm_to_cbuf_multi_nd2nz_b16(
+    //             dst + ndNum * CUBE_N0 * nValue,
+    //             src + ndNum * nValue * stride,
+    //             static_cast<uint8_t>(0),            // sid
+    //             static_cast<uint16_t>(1),           // ndNum
+    //             static_cast<uint16_t>(remains),     // nValue
+    //             static_cast<uint16_t>(LenCol),   // dValue
+    //             static_cast<uint16_t>(0),           // srcNdMatrixStride
+    //             static_cast<uint16_t>(srcNStride),  // srcDValue
+    //             static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+    //             static_cast<uint16_t>(1),           // dstNzNStride
+    //             static_cast<uint16_t>(0)           // dstNzMatrixStride
+    //         );
+    //     }
+    // } else {
+    //     for(int i = 0; i < LenRow; i++) {
+    //         int idxR0 = i / CUBE_N0;
+    //         int idxInR0 = i % CUBE_N0;
+    //         copy_gm_to_cbuf_multi_nd2nz_b16(
+    //             dst + idxR0 * CUBE_N0 * CUBE_M0 + idxInR0 * CUBE_K0,
+    //             src + i * stride,
+    //             static_cast<uint8_t>(0),            // sid
+    //             static_cast<uint16_t>(1),           // ndNum
+    //             static_cast<uint16_t>(1),           // nValue
+    //             static_cast<uint16_t>(LenCol),   // dValue
+    //             static_cast<uint16_t>(0),           // srcNdMatrixStride, unused
+    //             static_cast<uint16_t>(0),           // srcDValue, unused
+    //             static_cast<uint16_t>(LenRow),          // dstNzC0Stride
+    //             static_cast<uint16_t>(1),           // dstNzNStride, unused
+    //             static_cast<uint16_t>(0)           // dstNzMatrixStride, unused
+    //         );
+    //     }
+    // }
+
 // /**
 //  * @brief AIC函数：将列优先的nD矩阵转换为nN格式
 //  * @param [in] __cbuf__ __fp16 *dst：L1 目的地址
@@ -117,122 +290,3 @@ constexpr int64_t UINT16_STRIDE_LIMIT = 65536;
 //         }
 //     }
 // }
-
-/**
- * @brief AIC函数：将列优先的nD矩阵转换为nZ格式
- * @param [in] __cbuf__ __fp16 *dst：L1 目的地址
- * @param [in] __gm__ __fp16 *src: GM 源地址
- * @param [in] int64_t CBUF_M0：在L1中矩阵的行数（至少要32B对齐）
- * @param [in] int64_t CBUF_N0：在L1中矩阵的列数（至少要32B对齐）
- * @param [in] int64_t LenRow：在GM中矩阵的行数（不需要对齐）
- * @param [in] int64_t LenCol：在GM中矩阵的列数（不需要对齐）
- * @param [in] int64_t stride：在GM中矩阵中两列之间的距离（不需要对齐）
- */
-__aicore__ __inline__ void ascblas_matrix_gm2cbuf_ND2nZ(
-    __cbuf__ __fp16 *dst, 
-    __gm__ __fp16 * src,
-    int64_t CBUF_M0,
-    int64_t CBUF_N0, 
-    int64_t LenRow, 
-    int64_t LenCol, 
-    size_t stride
-)
-{
-    // 一个ND处理CUBE_M0行数据
-    int64_t srcNdStride = CUBE_M0 * stride;
-    int64_t srcNStride = stride;
-    if(srcNdStride < UINT16_STRIDE_LIMIT) {
-        int nValue = CUBE_M0;
-        int ndNum = LenRow / CUBE_M0; 
-        int remains = LenRow % CUBE_M0;
-        if(ndNum > 0) {
-            // 该函数的接口参考这个网址：https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/80RC3alpha003/apiref/opdevgapi/atlasascendc_api_07_0108.html
-            // 其中的 Nd2NzParams
-            copy_gm_to_cbuf_multi_nd2nz_b16(
-                dst,
-                src,
-                static_cast<uint8_t>(0),            // sid
-                static_cast<uint16_t>(ndNum),       // ndNum
-                static_cast<uint16_t>(nValue),          // nValue
-                static_cast<uint16_t>(LenCol),   // dValue
-                static_cast<uint16_t>(srcNdStride), // srcNdMatrixStride
-                static_cast<uint16_t>(srcNStride),  // srcDValue
-                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
-                static_cast<uint16_t>(1),           // dstNzNStride
-                static_cast<uint16_t>(CUBE_N0 * nValue)      // dstNzMatrixStride
-            );
-        }
-        if(remains > 0){
-            copy_gm_to_cbuf_multi_nd2nz_b16(
-                dst + ndNum * CUBE_N0 * nValue,
-                src + ndNum * nValue * stride,
-                static_cast<uint8_t>(0),            // sid
-                static_cast<uint16_t>(1),           // ndNum
-                static_cast<uint16_t>(remains),     // nValue
-                static_cast<uint16_t>(LenCol),   // dValue
-                static_cast<uint16_t>(0),           // srcNdMatrixStride
-                static_cast<uint16_t>(srcNStride),  // srcDValue
-                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
-                static_cast<uint16_t>(1),           // dstNzNStride
-                static_cast<uint16_t>(0)           // dstNzMatrixStride
-            );
-        }
-    } else if (srcNStride < UINT16_STRIDE_LIMIT) {
-        int nValue = 1;
-        while(nValue * stride < UINT16_STRIDE_LIMIT / 2){
-            nValue *= 2;
-        }
-        int ndNum = LenRow / nValue;
-        int remains = LenRow % nValue;
-        int srcNdMatrixStride = nValue * stride;
-        // for (int i = 0; i < ndNum; i++) {
-        if(ndNum > 0) {
-            copy_gm_to_cbuf_multi_nd2nz_b16(
-                dst,
-                src,
-                static_cast<uint8_t>(0),            // sid
-                static_cast<uint16_t>(ndNum),           // ndNum
-                static_cast<uint16_t>(nValue),          // nValue
-                static_cast<uint16_t>(LenCol),   // dValue
-                static_cast<uint16_t>(srcNdMatrixStride), // srcNdMatrixStride
-                static_cast<uint16_t>(srcNStride),  // srcDValue
-                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
-                static_cast<uint16_t>(1),           // dstNzNStride
-                static_cast<uint16_t>(nValue * CUBE_N0)      // dstNzMatrixStride
-            );
-        }
-        if(remains > 0) {
-            copy_gm_to_cbuf_multi_nd2nz_b16(
-                dst + ndNum * CUBE_N0 * nValue,
-                src + ndNum * nValue * stride,
-                static_cast<uint8_t>(0),            // sid
-                static_cast<uint16_t>(1),           // ndNum
-                static_cast<uint16_t>(remains),     // nValue
-                static_cast<uint16_t>(LenCol),   // dValue
-                static_cast<uint16_t>(0),           // srcNdMatrixStride
-                static_cast<uint16_t>(srcNStride),  // srcDValue
-                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
-                static_cast<uint16_t>(1),           // dstNzNStride
-                static_cast<uint16_t>(0)           // dstNzMatrixStride
-            );
-        }
-    } else {
-        for(int i = 0; i < LenRow; i++) {
-            int idxR0 = i / CUBE_N0;
-            int idxInR0 = i % CUBE_N0;
-            copy_gm_to_cbuf_multi_nd2nz_b16(
-                dst + idxR0 * CUBE_N0 * CUBE_M0 + idxInR0 * CUBE_K0,
-                src + i * stride,
-                static_cast<uint8_t>(0),            // sid
-                static_cast<uint16_t>(1),           // ndNum
-                static_cast<uint16_t>(1),           // nValue
-                static_cast<uint16_t>(LenCol),   // dValue
-                static_cast<uint16_t>(0),           // srcNdMatrixStride, unused
-                static_cast<uint16_t>(0),           // srcDValue, unused
-                static_cast<uint16_t>(LenRow),          // dstNzC0Stride
-                static_cast<uint16_t>(0),           // dstNzNStride, unused
-                static_cast<uint16_t>(0)           // dstNzMatrixStride, unused
-            );
-        }
-    }
-}
